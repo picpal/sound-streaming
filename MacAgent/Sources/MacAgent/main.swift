@@ -24,6 +24,24 @@ case "capture-wav":
     }
     sem.wait()
     print("saved /tmp/capture.wav")
+case "record-aac":
+    let seconds = args.count > 2 ? Int(args[2]) ?? 10 : 10
+    let sem = DispatchSemaphore(value: 0)
+    Task {
+        let cap = ChromeAudioCapture()
+        var enc: AACEncoder?
+        FileManager.default.createFile(atPath: "/tmp/capture.aac", contents: nil)
+        let fh = FileHandle(forWritingAtPath: "/tmp/capture.aac")!
+        cap.onPCM = { pcm in
+            if enc == nil { enc = AACEncoder(inputFormat: pcm.format) }
+            for frame in enc?.encode(pcm) ?? [] { fh.write(frame) }
+        }
+        try await cap.start()
+        try await Task.sleep(for: .seconds(seconds))
+        await cap.stop(); try? fh.close(); sem.signal()
+    }
+    sem.wait()
+    print("saved /tmp/capture.aac")
 default:
     print("usage: MacAgent capture-wav <sec> | record-aac <sec> | serve | enroll <code>")
     exit(1)
