@@ -46,15 +46,15 @@ case "record-aac":
 case "serve":
     let server = StreamServer(port: 8080)
     var seq: UInt64 = 0
-    Task {
-        let cap = ChromeAudioCapture()
-        var enc: AACEncoder?
-        cap.onPCM = { pcm in
-            if enc == nil { enc = AACEncoder(inputFormat: pcm.format) }
-            for frame in enc?.encode(pcm) ?? [] {
-                server.broadcast(Envelope.encode(type: .audio, payload: frame))
-            }
+    let cap = ChromeAudioCapture()
+    var enc: AACEncoder?
+    cap.onPCM = { pcm in
+        if enc == nil { enc = AACEncoder(inputFormat: pcm.format) }
+        for frame in enc?.encode(pcm) ?? [] {
+            server.broadcast(Envelope.encode(type: .audio, payload: frame))
         }
+    }
+    Task {
         try await cap.start()
         print("streaming. 'm'+Enter = command 마커 주입(곡 전환 시뮬레이션)")
     }
