@@ -2,7 +2,7 @@
   "project": "youtumu-player",
   "spec": "apple_watch_youtube_music_remote_player_design.md",
   "plan": "docs/superpowers/plans/2026-08-25-phase0-kill-risk-poc.md",
-  "updated": "2026-08-25T23:30:09+09:00",
+  "updated": "2026-08-25T23:40:28+09:00",
   "current": {
     "phase": "phase0",
     "task": null
@@ -43,7 +43,8 @@
         {
           "id": 6,
           "name": "/audio/live 스트림 서버 + 마커 주입",
-          "status": "pending"
+          "status": "done",
+          "note": "healthz/마커 주입/단일 수신자 headless 검증 통과; 라이브 오디오 스트림 검증은 체크포인트 보류"
         },
         {
           "id": 7,
