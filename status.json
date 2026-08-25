@@ -2,10 +2,10 @@
   "project": "youtumu-player",
   "spec": "apple_watch_youtube_music_remote_player_design.md",
   "plan": "docs/superpowers/plans/2026-08-25-phase0-kill-risk-poc.md",
-  "updated": "2026-08-25T23:43:36+09:00",
+  "updated": "2026-08-25T23:58:19+09:00",
   "current": {
     "phase": "phase0",
-    "task": null
+    "task": 8
   },
   "phases": {
     "phase0": {
@@ -55,12 +55,14 @@
         {
           "id": 8,
           "name": "Watch SE 키 + Enrollment",
-          "status": "pending"
+          "status": "in_progress",
+          "note": "Mac EnrollServer e2e 검증 완료 + Watch 소스 스테이징/typecheck 완료. 남은 것: Xcode 프로젝트 생성·실기기 Enroll (사용자 단계)"
         },
         {
           "id": 9,
           "name": "Watch 스트림 수신 + 재생",
-          "status": "pending"
+          "status": "in_progress",
+          "note": "StreamPlayer/AACDecoder 스테이징 + watchOS SDK typecheck 통과. 남은 것: 실기기 재생 검증 (사용자 단계)"
         },
         {
           "id": 10,
