@@ -2,7 +2,7 @@
   "project": "youtumu-player",
   "spec": "apple_watch_youtube_music_remote_player_design.md",
   "plan": "docs/superpowers/plans/2026-08-25-phase0-kill-risk-poc.md",
-  "updated": "2026-08-25T23:15:11+09:00",
+  "updated": "2026-08-25T23:19:46+09:00",
   "current": {
     "phase": "phase0",
     "task": null
@@ -21,7 +21,7 @@
         {
           "id": 2,
           "name": "YoutumuKit envelope/ADTS 공유 라이브러리",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 3,
