@@ -1,0 +1,30 @@
+{
+    auto_https off
+}
+
+# 서비스: mTLS 필수
+https://:8443 {
+    tls ../scripts/ca/out/server.crt ../scripts/ca/out/server.key {
+        protocols tls1.3
+        client_auth {
+            mode require_and_verify
+            trust_pool file ../scripts/ca/out/ca.crt
+        }
+    }
+    reverse_proxy /audio/live 127.0.0.1:8080 {
+        flush_interval -1
+        transport http {
+            response_header_timeout 0
+        }
+    }
+    reverse_proxy 127.0.0.1:8080
+}
+
+# Enrollment: LAN 전용, client_auth 없음 (포트포워딩 비대상 → WAN 비노출)
+https://172.30.1.15:8444 {
+    bind 172.30.1.15
+    tls ../scripts/ca/out/server.crt ../scripts/ca/out/server.key {
+        protocols tls1.3
+    }
+    reverse_proxy 127.0.0.1:8081
+}
