@@ -1,0 +1,10 @@
+.DS_Store
+.build/
+*.xcuserdata/
+xcuserdata/
+scripts/ca/out/
+*.wav
+*.aac
+stream.bin
+.context/
+.superpowers/
