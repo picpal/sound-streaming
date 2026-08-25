@@ -68,6 +68,12 @@ case "serve":
         }
     }
     try server.run()
+case "enroll":
+    guard args.count > 2 else {
+        print("usage: MacAgent enroll <code>")
+        exit(1)
+    }
+    try EnrollServer(code: args[2]).run()
 default:
     print("usage: MacAgent capture-wav <sec> | record-aac <sec> | serve | enroll <code>")
     exit(1)
