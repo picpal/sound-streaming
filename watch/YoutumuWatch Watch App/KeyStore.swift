@@ -61,7 +61,7 @@ enum KeyStore {
     static func identity() -> SecIdentity? {
         let q: [String: Any] = [kSecClass as String: kSecClassIdentity,
                                 kSecReturnRef as String: true,
-                                kSecMatchLimit as String: kSecMatchLimitFirst]
+                                kSecMatchLimit as String: kSecMatchLimitOne]
         var item: CFTypeRef?
         guard SecItemCopyMatching(q as CFDictionary, &item) == errSecSuccess else { return nil }
         return (item as! SecIdentity)

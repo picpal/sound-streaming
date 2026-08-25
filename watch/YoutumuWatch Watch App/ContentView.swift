@@ -47,7 +47,7 @@ struct ContentView: View {
         }.padding()}
         .task {
             if KeyStore.identity() != nil { enrollStatus = "enrolled (identity OK)" }
-            player.onMarker = { m in lastSeq = "seq \(m.seq)" }
+            player.onMarker = { m in Task { @MainActor in lastSeq = "seq \(m.seq)" } }
         }
     }
 }
