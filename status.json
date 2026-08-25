@@ -2,7 +2,7 @@
   "project": "youtumu-player",
   "spec": "apple_watch_youtube_music_remote_player_design.md",
   "plan": "docs/superpowers/plans/2026-08-25-phase0-kill-risk-poc.md",
-  "updated": "2026-08-25T23:58:19+09:00",
+  "updated": "2026-08-26T00:17:54+09:00",
   "current": {
     "phase": "phase0",
     "task": 8
@@ -32,7 +32,7 @@
           "id": 4,
           "name": "Chrome 오디오 캡처 → WAV",
           "status": "done",
-          "note": "code+build OK; TCC 화면기록 권한 필요한 런타임 캡처 검증은 사용자 체크포인트로 보류 (screen-lock 검증 포함)"
+          "note": "런타임 검증 완료: TCC 허용, Chrome 앱필터 캡처 실오디오 rms 0.14 확인. 화면잠금 캡처만 사용자 확인 남음"
         },
         {
           "id": 5,
@@ -44,7 +44,7 @@
           "id": 6,
           "name": "/audio/live 스트림 서버 + 마커 주입",
           "status": "done",
-          "note": "healthz/마커 주입/단일 수신자 headless 검증 통과; 라이브 오디오 스트림 검증은 체크포인트 보류"
+          "note": "런타임 검증 완료: serve→Caddy mTLS 경유 실오디오 스트림 rms 0.141/92kbps. Task 수명 버그 수정(2bd2c25)"
         },
         {
           "id": 7,
