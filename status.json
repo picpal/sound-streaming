@@ -2,7 +2,7 @@
   "project": "youtumu-player",
   "spec": "apple_watch_youtube_music_remote_player_design.md",
   "plan": "docs/superpowers/plans/2026-08-25-phase0-kill-risk-poc.md",
-  "updated": "2026-08-25T23:23:08+09:00",
+  "updated": "2026-08-25T23:27:55+09:00",
   "current": {
     "phase": "phase0",
     "task": null
@@ -31,7 +31,8 @@
         {
           "id": 4,
           "name": "Chrome 오디오 캡처 → WAV",
-          "status": "pending"
+          "status": "done",
+          "note": "code+build OK; TCC 화면기록 권한 필요한 런타임 캡처 검증은 사용자 체크포인트로 보류 (screen-lock 검증 포함)"
         },
         {
           "id": 5,
