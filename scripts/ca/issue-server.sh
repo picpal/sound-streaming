@@ -11,5 +11,5 @@ extendedKeyUsage=serverAuth
 subjectAltName=DNS:${DDNS},DNS:${LAN_NAME},IP:${LAN_IP}
 EOF
 openssl x509 -req -in out/server.csr -CA out/ca.crt -CAkey out/ca.key -CAcreateserial \
-  -days 1095 -sha256 -extfile out/server.ext -out out/server.crt
+  -days 820 -sha256 -extfile out/server.ext -out out/server.crt
 openssl verify -CAfile out/ca.crt out/server.crt

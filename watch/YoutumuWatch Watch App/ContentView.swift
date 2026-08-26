@@ -9,7 +9,7 @@ struct ContentView: View {
 
     // Playback UI (Task 9)
     @State private var player = StreamPlayer()
-    @State private var serverHost = "172.30.1.15"
+    @State private var serverHost = "homeui-Macmini.local"   // mTLS는 SNI 필수(Caddy strict SNI) — IP 접속은 421
     @State private var lastSeq = "-"
 
     var body: some View {

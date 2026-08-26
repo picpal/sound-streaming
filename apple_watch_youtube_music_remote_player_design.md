@@ -452,7 +452,7 @@ POST /api/player/*        < 100ms
 ```text
 Home Root CA  (ECDSA P-256, 10년, 오프라인 보관)
 │
-├─ Server Leaf   xxxx.iptime.org        (3년)
+├─ Server Leaf   xxxx.iptime.org        (820일 — Apple TLS 정책상 서버 인증서는 최대 825일)
 │                SAN: DDNS hostname + LAN 주소(mDNS 또는 고정 IP)
 │
 └─ Client Leaf   watch-s7               (3년)
@@ -547,7 +547,7 @@ plain file
 | 대상 | 유효기간 | 갱신 방법 |
 |---|---|---|
 | Home Root CA | 10년 | 사실상 갱신 없음 |
-| Server Leaf | 3년 | CA로 재발급 후 Caddy reload |
+| Server Leaf | 820일 (Apple TLS 정책: 서버 인증서 ≤825일 — 초과 시 watchOS가 OtherTrustValidityPeriod로 거부) | CA로 재발급 후 Caddy reload |
 | Client Leaf | 3년 | LAN Enrollment 재수행 |
 
 앱 내장 CA 기준이므로 공인 CA의 유효기간 제한과 무관하게 길게 가져갈 수 있고, 운영 부담은 연 1회 미만이다.

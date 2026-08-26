@@ -2,10 +2,10 @@
   "project": "youtumu-player",
   "spec": "apple_watch_youtube_music_remote_player_design.md",
   "plan": "docs/superpowers/plans/2026-08-25-phase0-kill-risk-poc.md",
-  "updated": "2026-08-26T12:11:44+09:00",
+  "updated": "2026-08-26T12:26:05+09:00",
   "current": {
     "phase": "phase0",
-    "task": 8
+    "task": null
   },
   "phases": {
     "phase0": {
@@ -55,14 +55,14 @@
         {
           "id": 8,
           "name": "Watch SE 키 + Enrollment",
-          "status": "in_progress",
-          "note": "xcodegen 프로젝트 생성, Simulator+실기기 서명 빌드 성공. 남은 것: 실기기 설치·Enroll"
+          "status": "done",
+          "note": "Simulator에서 Enrollment e2e 성공(identity OK). 서버 cert 1095d→820d 재발급(Apple 825일 제약). 실기기 Enroll만 잔여"
         },
         {
           "id": 9,
           "name": "Watch 스트림 수신 + 재생",
-          "status": "in_progress",
-          "note": "StreamPlayer/AACDecoder 스테이징 + watchOS SDK typecheck 통과. 남은 것: 실기기 재생 검증 (사용자 단계)"
+          "status": "done",
+          "note": "Simulator에서 mTLS 스트림 연결+마커 수신(seq 2 표시)+flush 경로 검증. 실기기 재생/청취 검증 잔여"
         },
         {
           "id": 10,
