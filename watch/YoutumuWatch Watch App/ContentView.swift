@@ -3,7 +3,7 @@ import YoutumuKit
 
 struct ContentView: View {
     // Enrollment UI (Task 8)
-    @State private var mac = "192.168.0.10"
+    @State private var mac = "172.30.1.15"
     @State private var code = ""
     @State private var enrollStatus = "not enrolled"
 
