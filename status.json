@@ -2,7 +2,7 @@
   "project": "youtumu-player",
   "spec": "apple_watch_youtube_music_remote_player_design.md",
   "plan": "docs/superpowers/plans/2026-08-25-phase0-kill-risk-poc.md",
-  "updated": "2026-08-26T00:17:54+09:00",
+  "updated": "2026-08-26T11:51:20+09:00",
   "current": {
     "phase": "phase0",
     "task": 8
@@ -32,7 +32,7 @@
           "id": 4,
           "name": "Chrome 오디오 캡처 → WAV",
           "status": "done",
-          "note": "런타임 검증 완료: TCC 허용, Chrome 앱필터 캡처 실오디오 rms 0.14 확인. 화면잠금 캡처만 사용자 확인 남음"
+          "note": "런타임 전체 검증 완료: TCC 허용, Chrome 필터 캡처 rms 0.14, 화면 잠금 중 캡처 지속 확인(80초 연속, G6 사전 통과). App Nap이 CLI 타이머만 지연시킴(캡처는 무영향)"
         },
         {
           "id": 5,
