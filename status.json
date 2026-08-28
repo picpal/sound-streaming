@@ -2,7 +2,7 @@
   "project": "youtumu-player",
   "spec": "apple_watch_youtube_music_remote_player_design.md",
   "plan": "docs/superpowers/plans/2026-08-25-phase0-kill-risk-poc.md",
-  "updated": "2026-08-28T23:17:26+09:00",
+  "updated": "2026-08-28T23:30:52+09:00",
   "current": {
     "phase": "phase0",
     "task": 10
@@ -56,13 +56,13 @@
           "id": 8,
           "name": "Watch SE 키 + Enrollment",
           "status": "done",
-          "note": "Simulator에서 Enrollment e2e 성공(identity OK). 서버 cert 1095d→820d 재발급(Apple 825일 제약). 실기기 Enroll만 잔여"
+          "note": "Watch Series 7 실기기 SE 키 enrollment 성공 (identity OK)"
         },
         {
           "id": 9,
           "name": "Watch 스트림 수신 + 재생",
           "status": "done",
-          "note": "iPhone 실기기 검증 완료: SE 키 enrollment, mTLS 스트리밍 청취, 마커 flush+1s pre-buffer 동작 확인. Mac 무음 모드 확인. Watch 실기기 검증만 잔여"
+          "note": "Watch 실기기 mTLS 스트리밍 재생 성공 (Wi-Fi). 게이트 측정으로 이관"
         },
         {
           "id": 10,
