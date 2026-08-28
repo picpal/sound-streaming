@@ -1,5 +1,8 @@
 {
     auto_https off
+    servers {
+        protocols h1 h2
+    }
 }
 
 # 서비스: mTLS 필수

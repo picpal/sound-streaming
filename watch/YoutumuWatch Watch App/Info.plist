@@ -18,13 +18,26 @@
 	<string>$(MARKETING_VERSION)</string>
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSExceptionDomains</key>
+		<dict>
+			<key>duckdns.org</key>
+			<dict>
+				<key>NSExceptionAllowsInsecureHTTPLoads</key>
+				<true/>
+				<key>NSIncludesSubdomains</key>
+				<true/>
+			</dict>
+		</dict>
+	</dict>
 	<key>WKApplication</key>
-	<true/>
-	<key>WKWatchOnly</key>
 	<true/>
 	<key>WKBackgroundModes</key>
 	<array>
 		<string>audio</string>
 	</array>
+	<key>WKWatchOnly</key>
+	<true/>
 </dict>
 </plist>
