@@ -15,6 +15,11 @@ final class StreamPlayer: NSObject, URLSessionDataDelegate {
     private let preBufferFrames: AVAudioFrameCount = 48_000     // 1초 (spec §6 지연 모델)
     var onMarker: ((Marker) -> Void)?
     var onEnded: ((String) -> Void)?
+    private(set) var bytesReceived: Int = 0
+    private(set) var startedAt: Date?
+    func stats() -> (seconds: Int, mb: Double) {
+        (Int(-(startedAt?.timeIntervalSinceNow ?? 0)), Double(bytesReceived) / 1_048_576)
+    }
 
     override init() {
         super.init()
@@ -29,6 +34,8 @@ final class StreamPlayer: NSObject, URLSessionDataDelegate {
     }
 
     func start(url: URL) async throws {
+        bytesReceived = 0
+        startedAt = Date()
         let av = AVAudioSession.sharedInstance()
         #if os(watchOS)
         try av.setCategory(.playback, mode: .default, policy: .longFormAudio)
@@ -65,6 +72,7 @@ final class StreamPlayer: NSObject, URLSessionDataDelegate {
 
     // MARK: URLSessionDataDelegate
     func urlSession(_ s: URLSession, dataTask: URLSessionDataTask, didReceive data: Data) {
+        bytesReceived += data.count
         parser.feed(data)
     }
     func urlSession(_ s: URLSession, didReceive challenge: URLAuthenticationChallenge,
