@@ -491,6 +491,11 @@ RemotePlayerAgent 127.0.0.1:8080
 - client certificate 없이는 핸드셰이크가 완료되지 않으므로 HTTP 표면 노출은 0
 - 인증 실패는 애플리케이션 계층이 아니라 TLS 계층에서 끝난다
 
+**iOS/watchOS 클라이언트 제약 (실기기 검증으로 확정, 2026-08):**
+- **HTTP/3 비활성 필수**: Caddy `servers { protocols h1 h2 }`. iOS는 h3 연결에서 URLSession 델리게이트의 신뢰 승인과 별개로 시스템 신뢰 평가를 강제하므로 사설 CA가 -9802로 거부됨.
+- **ATS 예외 필수**: 공개 도메인(duckdns.org)에는 ATS가 시스템 신뢰 평가를 강제(`.local`은 비적용). Info.plist `NSAppTransportSecurity → NSExceptionDomains → duckdns.org (NSIncludesSubdomains, NSExceptionAllowsInsecureHTTPLoads)` 선언. 델리게이트의 CA 핀닝(§10.3)이 그대로 강제되므로 실질 보안 저하 없음.
+- 서버 인증서 유효기간 ≤825일 (Apple TLS 정책, §10.6).
+
 ### 10.3 서버 인증 — Watch가 Mac을 검증
 
 - Watch 앱 번들에 Home Root CA 인증서를 내장
