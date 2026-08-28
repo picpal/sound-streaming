@@ -14,6 +14,7 @@ final class StreamPlayer: NSObject, URLSessionDataDelegate {
     private var started = false
     private let preBufferFrames: AVAudioFrameCount = 48_000     // 1초 (spec §6 지연 모델)
     var onMarker: ((Marker) -> Void)?
+    var onEnded: ((String) -> Void)?
 
     override init() {
         super.init()
@@ -73,5 +74,6 @@ final class StreamPlayer: NSObject, URLSessionDataDelegate {
     func urlSession(_ s: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
         // PoC: 재접속은 수동 (Play 버튼 재탭 = live edge 복귀). 자동 재접속은 Phase 6
         parser.reset(); flush()
+        onEnded?(error.map { ($0 as NSError).domain + " \(($0 as NSError).code): " + $0.localizedDescription } ?? "stream closed")
     }
 }
