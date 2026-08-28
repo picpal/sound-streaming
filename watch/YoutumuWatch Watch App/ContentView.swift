@@ -9,7 +9,7 @@ struct ContentView: View {
 
     // Playback UI (Task 9)
     @State private var player = StreamPlayer()
-    @State private var serverHost = "homeui-Macmini.local"   // mTLS는 SNI 필수(Caddy strict SNI) — IP 접속은 421
+    @State private var serverHost = "youtumu.duckdns.org"   // NAT loopback 지원 확인 → 내외부 단일 주소. mTLS는 SNI 필수 — IP 접속은 421
     @State private var lastSeq = "-"
     @State private var playStatus = ""
 
