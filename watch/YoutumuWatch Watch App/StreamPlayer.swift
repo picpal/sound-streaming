@@ -29,8 +29,16 @@ final class StreamPlayer: NSObject, URLSessionDataDelegate {
 
     func start(url: URL) async throws {
         let av = AVAudioSession.sharedInstance()
+        #if os(watchOS)
         try av.setCategory(.playback, mode: .default, policy: .longFormAudio)
         try await av.activate()                                  // 출력 라우트 선택 UI (AirPods)
+        #else
+        // iOS: .longFormAudio route sharing policy requires an AirPlay entitlement path;
+        // keep it simple with the default policy. AVAudioSession.activate() async is
+        // watchOS-oriented here — use the synchronous setActive(_:) on iOS instead.
+        try av.setCategory(.playback)
+        try av.setActive(true)
+        #endif
         try engine.start()
         task = session.dataTask(with: url)
         task?.resume()

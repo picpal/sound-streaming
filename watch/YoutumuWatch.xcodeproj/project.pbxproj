@@ -7,13 +7,21 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		160B2F0C02E6866590C5025F /* EnrollClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6525C2EB6E1E93255ECECAB /* EnrollClient.swift */; };
+		16D959CE83BE0D65D60FDF56 /* ca.crt in Resources */ = {isa = PBXBuildFile; fileRef = B771CB76889EEC0FDD307FD0 /* ca.crt */; };
+		1A4C049D463A0131A78D5640 /* KeyStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 311CE6E83B62E0D0DBDFA28F /* KeyStore.swift */; };
+		2114862B16951E991B9763C7 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D9A4FB3E502FE9A7D81C8A9 /* ContentView.swift */; };
 		245A6FE3D09803C76B6CF61E /* ca.crt in Resources */ = {isa = PBXBuildFile; fileRef = B771CB76889EEC0FDD307FD0 /* ca.crt */; };
 		4056FD9B64689986D645AE94 /* YoutumuKit in Frameworks */ = {isa = PBXBuildFile; productRef = 40CE66C9C71E9F2485D41145 /* YoutumuKit */; };
 		54FDF0E35CD6BFF41BF67B18 /* StreamPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E58D6E1F6FDD5FC324E92B1 /* StreamPlayer.swift */; };
+		6542F8417018D18A398A8214 /* AACDecoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBA3B404B8BCE24A5133564C /* AACDecoder.swift */; };
 		7CFE63E65A16C50912A5DE79 /* KeyStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 311CE6E83B62E0D0DBDFA28F /* KeyStore.swift */; };
 		AB3D10FBC214341D6F9B2231 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D9A4FB3E502FE9A7D81C8A9 /* ContentView.swift */; };
 		B50E5D2A54381ACD05BF7EF2 /* YoutumuWatchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 688EFA7E6A98DA52DAD0734C /* YoutumuWatchApp.swift */; };
+		BE7E773A95225C5B6668BB15 /* StreamPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E58D6E1F6FDD5FC324E92B1 /* StreamPlayer.swift */; };
+		CC223E94D233F62A089EE8B5 /* YoutumuWatchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 688EFA7E6A98DA52DAD0734C /* YoutumuWatchApp.swift */; };
 		DAFB10973801E7C4CB852D5F /* AACDecoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBA3B404B8BCE24A5133564C /* AACDecoder.swift */; };
+		FBBF095ADFB1BF10B5661E0B /* YoutumuKit in Frameworks */ = {isa = PBXBuildFile; productRef = 8CA39B538294AE37CD0C91CF /* YoutumuKit */; };
 		FCB5F11E379BA24B465CB98A /* EnrollClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6525C2EB6E1E93255ECECAB /* EnrollClient.swift */; };
 /* End PBXBuildFile section */
 
@@ -24,6 +32,7 @@
 		688EFA7E6A98DA52DAD0734C /* YoutumuWatchApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YoutumuWatchApp.swift; sourceTree = "<group>"; };
 		8D9A4FB3E502FE9A7D81C8A9 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		8E58D6E1F6FDD5FC324E92B1 /* StreamPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StreamPlayer.swift; sourceTree = "<group>"; };
+		AF68D3C6D549E259F385551B /* YoutumuPhone.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = YoutumuPhone.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B771CB76889EEC0FDD307FD0 /* ca.crt */ = {isa = PBXFileReference; path = ca.crt; sourceTree = "<group>"; };
 		D6525C2EB6E1E93255ECECAB /* EnrollClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnrollClient.swift; sourceTree = "<group>"; };
 		FBA3B404B8BCE24A5133564C /* AACDecoder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AACDecoder.swift; sourceTree = "<group>"; };
@@ -35,6 +44,14 @@
 			buildActionMask = 2147483647;
 			files = (
 				4056FD9B64689986D645AE94 /* YoutumuKit in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D5D406ABED255A99603B78EA /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				FBBF095ADFB1BF10B5661E0B /* YoutumuKit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -74,6 +91,7 @@
 		6E659ABC702D618BA83C2248 /* Products */ = {
 			isa = PBXGroup;
 			children = (
+				AF68D3C6D549E259F385551B /* YoutumuPhone.app */,
 				41145EF638C5B55F67346638 /* YoutumuWatch Watch App.app */,
 			);
 			name = Products;
@@ -92,6 +110,26 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		46DE73263FB68D0573161330 /* YoutumuPhone */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 6F8BF0A962082E38DF324A67 /* Build configuration list for PBXNativeTarget "YoutumuPhone" */;
+			buildPhases = (
+				0C59266D451F4BC5818219A9 /* Sources */,
+				6610AA01FFF104DC474DB17B /* Resources */,
+				D5D406ABED255A99603B78EA /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = YoutumuPhone;
+			packageProductDependencies = (
+				8CA39B538294AE37CD0C91CF /* YoutumuKit */,
+			);
+			productName = YoutumuPhone;
+			productReference = AF68D3C6D549E259F385551B /* YoutumuPhone.app */;
+			productType = "com.apple.product-type.application";
+		};
 		694C2FE2410059F33074116E /* YoutumuWatch Watch App */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = B331BC975ED25BBB5873F031 /* Build configuration list for PBXNativeTarget "YoutumuWatch Watch App" */;
@@ -121,6 +159,10 @@
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1430;
 				TargetAttributes = {
+					46DE73263FB68D0573161330 = {
+						DevelopmentTeam = 6626BYCJG4;
+						ProvisioningStyle = Automatic;
+					};
 					694C2FE2410059F33074116E = {
 						DevelopmentTeam = 6626BYCJG4;
 						ProvisioningStyle = Automatic;
@@ -145,11 +187,20 @@
 			projectRoot = "";
 			targets = (
 				694C2FE2410059F33074116E /* YoutumuWatch Watch App */,
+				46DE73263FB68D0573161330 /* YoutumuPhone */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		6610AA01FFF104DC474DB17B /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				16D959CE83BE0D65D60FDF56 /* ca.crt in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		8D1F9BC8209B5409D4D71FC1 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -161,6 +212,19 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		0C59266D451F4BC5818219A9 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				6542F8417018D18A398A8214 /* AACDecoder.swift in Sources */,
+				2114862B16951E991B9763C7 /* ContentView.swift in Sources */,
+				160B2F0C02E6866590C5025F /* EnrollClient.swift in Sources */,
+				1A4C049D463A0131A78D5640 /* KeyStore.swift in Sources */,
+				BE7E773A95225C5B6668BB15 /* StreamPlayer.swift in Sources */,
+				CC223E94D233F62A089EE8B5 /* YoutumuWatchApp.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		19917886CFAE506E2396120D /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -225,7 +289,6 @@
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = watchos;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				SWIFT_VERSION = 5.0;
@@ -269,6 +332,52 @@
 				WATCHOS_DEPLOYMENT_TARGET = 9.0;
 			};
 			name = Release;
+		};
+		CD9E7390B3D0701EEC75060A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 6626BYCJG4;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = "YoutumuPhone-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.picpal.YoutumuPhone;
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+		F37943CDF28D159539496A59 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 6626BYCJG4;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = "YoutumuPhone-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.picpal.YoutumuPhone;
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
 		};
 		FE0E8148604A6ED528AD5882 /* Debug */ = {
 			isa = XCBuildConfiguration;
@@ -325,7 +434,6 @@
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = watchos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
@@ -335,6 +443,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		6F8BF0A962082E38DF324A67 /* Build configuration list for PBXNativeTarget "YoutumuPhone" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F37943CDF28D159539496A59 /* Debug */,
+				CD9E7390B3D0701EEC75060A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
 		B331BC975ED25BBB5873F031 /* Build configuration list for PBXNativeTarget "YoutumuWatch Watch App" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -364,6 +481,10 @@
 
 /* Begin XCSwiftPackageProductDependency section */
 		40CE66C9C71E9F2485D41145 /* YoutumuKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = YoutumuKit;
+		};
+		8CA39B538294AE37CD0C91CF /* YoutumuKit */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = YoutumuKit;
 		};
