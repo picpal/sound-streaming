@@ -1,7 +1,7 @@
 #!/bin/bash
 set -u
 CA=scripts/ca/out/ca.crt; C=scripts/ca/out/test-client
-HOST=youtumu.iptime.org
+HOST=youtumu.duckdns.org
 RESOLVE="--resolve $HOST:8443:127.0.0.1"
 pass=0; fail=0
 chk() { local name="$1" want="$2" got="$3"

@@ -53,7 +53,7 @@ Apple Watch Series 7 Cellular 41mm에서 iPhone 없이 LTE/Wi‑Fi만으로 집�
                          │ LTE / Wi‑Fi
                          │ HTTPS + mTLS
                          ▼
-                xxxx.iptime.org:18443
+                youtumu.duckdns.org:8443
                          │
                          ▼
 ┌────────────────────── ipTIME ─────────────────────────────────┐
@@ -92,7 +92,7 @@ Apple Watch Series 7 Cellular 41mm에서 iPhone 없이 LTE/Wi‑Fi만으로 집�
 ipTIME DDNS를 사용한다.
 
 ```text
-xxxx.iptime.org
+youtumu.duckdns.org
        ↓
 현재 집 Public IP
        ↓
@@ -452,7 +452,7 @@ POST /api/player/*        < 100ms
 ```text
 Home Root CA  (ECDSA P-256, 10년, 오프라인 보관)
 │
-├─ Server Leaf   xxxx.iptime.org        (820일 — Apple TLS 정책상 서버 인증서는 최대 825일)
+├─ Server Leaf   youtumu.duckdns.org        (820일 — Apple TLS 정책상 서버 인증서는 최대 825일)
 │                SAN: DDNS hostname + LAN 주소(mDNS 또는 고정 IP)
 │
 └─ Client Leaf   watch-s7               (3년)
