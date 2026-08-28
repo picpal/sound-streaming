@@ -2,7 +2,7 @@
   "project": "youtumu-player",
   "spec": "apple_watch_youtube_music_remote_player_design.md",
   "plan": "docs/superpowers/plans/2026-08-25-phase0-kill-risk-poc.md",
-  "updated": "2026-08-26T12:26:05+09:00",
+  "updated": "2026-08-28T22:29:28+09:00",
   "current": {
     "phase": "phase0",
     "task": null
@@ -62,7 +62,7 @@
           "id": 9,
           "name": "Watch 스트림 수신 + 재생",
           "status": "done",
-          "note": "Simulator에서 mTLS 스트림 연결+마커 수신(seq 2 표시)+flush 경로 검증. 실기기 재생/청취 검증 잔여"
+          "note": "iPhone 실기기 검증 완료: SE 키 enrollment, mTLS 스트리밍 청취, 마커 flush+1s pre-buffer 동작 확인. Mac 무음 모드 확인. Watch 실기기 검증만 잔여"
         },
         {
           "id": 10,
