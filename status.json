@@ -2,10 +2,10 @@
   "project": "youtumu-player",
   "spec": "apple_watch_youtube_music_remote_player_design.md",
   "plan": "docs/superpowers/plans/2026-08-25-phase0-kill-risk-poc.md",
-  "updated": "2026-08-28T22:29:28+09:00",
+  "updated": "2026-08-28T23:17:26+09:00",
   "current": {
     "phase": "phase0",
-    "task": null
+    "task": 10
   },
   "phases": {
     "phase0": {
@@ -67,7 +67,8 @@
         {
           "id": 10,
           "name": "필드 테스트 + 게이트 판정",
-          "status": "pending"
+          "status": "in_progress",
+          "note": "외부 경로 사전검증 완료: DuckDNS+포워딩, iPhone LTE 스트리밍 성공(h3 비활성+ATS 예외로 해결). Watch 게이트 측정 대기"
         }
       ]
     },

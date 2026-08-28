@@ -74,6 +74,7 @@ final class StreamPlayer: NSObject, URLSessionDataDelegate {
     func urlSession(_ s: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
         // PoC: 재접속은 수동 (Play 버튼 재탭 = live edge 복귀). 자동 재접속은 Phase 6
         parser.reset(); flush()
+        if let e = error as NSError?, e.code == NSURLErrorCancelled { return }   // Stop 버튼에 의한 정상 취소
         onEnded?(error.map { ($0 as NSError).domain + " \(($0 as NSError).code): " + $0.localizedDescription } ?? "stream closed")
     }
 }
