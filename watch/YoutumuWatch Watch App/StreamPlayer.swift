@@ -48,6 +48,7 @@ final class StreamPlayer: NSObject, URLSessionDataDelegate {
         try av.setActive(true)
         #endif
         try engine.start()
+        task?.cancel()                                           // 이전 연결 정리 (취소 오류는 아래에서 필터됨)
         task = session.dataTask(with: url)
         task?.resume()
     }
@@ -72,6 +73,7 @@ final class StreamPlayer: NSObject, URLSessionDataDelegate {
 
     // MARK: URLSessionDataDelegate
     func urlSession(_ s: URLSession, dataTask: URLSessionDataTask, didReceive data: Data) {
+        guard dataTask === task else { return }                  // 교체된 이전 태스크의 잔여 데이터 무시
         bytesReceived += data.count
         parser.feed(data)
     }
@@ -80,6 +82,7 @@ final class StreamPlayer: NSObject, URLSessionDataDelegate {
         tlsDelegate.urlSession(s, didReceive: challenge, completionHandler: completionHandler)
     }
     func urlSession(_ s: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
+        guard task === self.task else { return }                 // 이전 연결의 뒤늦은 종료가 현재 스트림 상태를 깨지 않게
         // PoC: 재접속은 수동 (Play 버튼 재탭 = live edge 복귀). 자동 재접속은 Phase 6
         parser.reset(); flush()
         if let e = error as NSError?, e.code == NSURLErrorCancelled { return }   // Stop 버튼에 의한 정상 취소
