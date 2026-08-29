@@ -11,10 +11,11 @@ public final class ChromeAudioCapture: NSObject, SCStreamOutput {
 
     public func start() async throws {
         let content = try await SCShareableContent.current
-        guard let app = content.applications.first(where: { $0.bundleIdentifier == "com.google.Chrome" })
-        else { throw CaptureError.chromeNotFound }
+        // Chrome 인스턴스는 복수일 수 있다 (개인 + 전용 프로필 --user-data-dir, spec §11) — 전부 포함해야 전용 인스턴스 오디오가 잡힌다
+        let apps = content.applications.filter { $0.bundleIdentifier == "com.google.Chrome" }
+        guard !apps.isEmpty else { throw CaptureError.chromeNotFound }
         guard let display = content.displays.first else { throw CaptureError.noDisplay }
-        let filter = SCContentFilter(display: display, including: [app], exceptingWindows: [])
+        let filter = SCContentFilter(display: display, including: apps, exceptingWindows: [])
         let cfg = SCStreamConfiguration()
         cfg.capturesAudio = true
         cfg.excludesCurrentProcessAudio = true
