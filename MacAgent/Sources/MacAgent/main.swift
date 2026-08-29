@@ -46,7 +46,6 @@ case "record-aac":
     print("saved /tmp/capture.aac")
 case "serve":
     let server = StreamServer(port: 8080)
-    var seq: UInt64 = 0
     let cap = ChromeAudioCapture()
     var enc: AACEncoder?
     cap.onPCM = { pcm in
@@ -55,18 +54,21 @@ case "serve":
             server.broadcast(Envelope.encode(type: .audio, payload: frame))
         }
     }
+    let cdp = CDPClient()
+    let controller = BrowserController(cdp: cdp)
+    let svc = PlayerStateService()
+    server.api = ControlAPI(store: CommandStore(), svc: svc, controller: controller)
+    svc.onTrackChange = { m in
+        server.broadcast(Envelope.encodeMarker(m))    // 실제 곡 전환 → 스트림 MARKER (spec §6)
+        print("MARKER seq=\(m.seq) cause=\(m.cause.rawValue) track=\(m.trackId)")
+    }
     Task {
         try await cap.start()
-        print("streaming. 'm'+Enter = command 마커 주입(곡 전환 시뮬레이션)")
-    }
-    Task {  // stdin 마커 주입
-        while let line = readLine() {
-            if line == "m" {
-                seq += 1
-                server.broadcast(Envelope.encodeMarker(Marker(seq: seq, trackId: "sim-\(seq)", cause: .command)))
-                print("MARKER seq=\(seq) sent")
-            }
-        }
+        try? await cdp.connect()                      // Chrome 미기동이면 폴링 루프가 재시도
+        svc.startPolling(controller: controller)
+        // NOTE: brief의 print에 `try? await` 문자열 보간이 있어 컴파일이 안 되어 로컬 변수로 분리(동작 동일)
+        let cdpConnected = (try? await controller.snapshot()) != nil
+        print("streaming + control API ready (CDP \(cdpConnected ? "connected" : "retrying"))")
     }
     try server.run()
 case "enroll":

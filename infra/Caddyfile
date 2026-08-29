@@ -14,6 +14,9 @@ https://:8443 {
             trust_pool file ../scripts/ca/out/ca.crt
         }
     }
+    request_body {
+        max_size 16KB
+    }
     reverse_proxy /audio/live 127.0.0.1:8080 {
         flush_interval -1
         transport http {
