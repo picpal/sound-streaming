@@ -2,16 +2,20 @@
   "project": "youtumu-player",
   "spec": "apple_watch_youtube_music_remote_player_design.md",
   "plan": "docs/superpowers/plans/2026-08-25-phase0-kill-risk-poc.md",
-  "updated": "2026-08-28T23:30:52+09:00",
+  "updated": "2026-08-29T11:24:19+09:00",
   "current": {
     "phase": "phase0",
-    "task": 10
+    "task": null
   },
   "phases": {
     "phase0": {
       "name": "Kill-Risk PoC",
-      "status": "in_progress",
-      "gate": null,
+      "status": "done",
+      "gate": {
+        "result": "CONDITIONAL_PASS",
+        "date": "2026-08-29",
+        "details": "docs/poc-results.md — G1/G3/G4/G6 PASS, G2/G5는 Watch 셀룰러 개통 후 확정(네트워크 경로는 iPhone LTE로 사전 실증)"
+      },
       "tasks": [
         {
           "id": 1,
@@ -67,14 +71,14 @@
         {
           "id": 10,
           "name": "필드 테스트 + 게이트 판정",
-          "status": "in_progress",
-          "note": "외부 경로 사전검증 완료: DuckDNS+포워딩, iPhone LTE 스트리밍 성공(h3 비활성+ATS 예외로 해결). Watch 게이트 측정 대기"
+          "status": "done",
+          "note": "G1/G3/G4/G6 PASS. G2/G5는 셀룰러 개통 후 잔여 측정 (경로는 사전 실증 완료)"
         }
       ]
     },
     "phase1": {
       "name": "Mac Player Control",
-      "status": "blocked",
+      "status": "pending",
       "blockedBy": "phase0.gate"
     },
     "phase2": {

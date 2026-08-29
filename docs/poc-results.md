@@ -7,7 +7,7 @@
 | G1 | 백그라운드 재생 | 화면 OFF + 손목 내림 10분 지속 | 10분 연속 재생, 소리 양호, 서버측 연결 끊김 0회 (5초 간격 관찰) | **PASS** |
 | G2 | 셀룰러 단독 | iPhone 없이 외부 LTE에서 재생 시작 성공 | 네트워크 경로는 iPhone LTE로 사전 실증(DDNS→포워딩→mTLS 재생 성공). Watch 단독은 셀룰러 개통 후 측정 | 보류 (경로 검증 완료) |
 | G3 | SE mTLS | SecIdentity 기반 연결 성공 (LAN + LTE) | Watch 실기기 SE 키 enrollment "identity OK" + LAN(mDNS·hairpin) 재생 성공. iPhone SE 키로 LTE 경로도 성공 | **PASS** (Watch LTE 재확인은 G2와 함께) |
-| G4 | 곡 전환 latency | `m` 마커 10회, p95 ≤ 2초 | (측정 예정) | |
+| G4 | 곡 전환 latency | `m` 마커 10회, p95 ≤ 2초 | 10회 전부 2초 이내 (Wi-Fi, Watch 실기기 청취 기준) | **PASS** |
 | G5 | 60분 soak | 자동 복구 불가 disconnect 0회, stall 누적 < 30초 | (셀룰러 개통 후 측정 예정) | |
 | G6 | Mac 캡처 | 화면 잠금 상태에서 캡처 지속 | 93초 중 80초 연속 오디오(rms~0.04), 잠금 후에도 SCK 콜백 지속 | **PASS** |
 | M1 | 배터리 (기록용) | 60분 소모 % | 10분 기준 45%→40% (5%p, 시스템 표시 기준 — 앱 API는 45→45로 해상도 한계). 60분 환산 ~30% 추정 → G5에서 실측·튜닝 판단 | 판정 없음 |
