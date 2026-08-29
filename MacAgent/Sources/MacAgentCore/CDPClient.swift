@@ -29,12 +29,16 @@ public final class CDPClient: NSObject {
     }
 
     public func evaluate(_ js: String) async throws -> String? {
-        lock.lock()
-        guard let task = ws else { lock.unlock(); throw CDPError.disconnected }
-        let id = nextId; nextId += 1
-        lock.unlock()
-        return try await withCheckedThrowingContinuation { cont in
-            lock.lock(); pending[id] = cont; lock.unlock()
+        try await withCheckedThrowingContinuation { cont in
+            lock.lock()
+            guard let task = ws else {
+                lock.unlock()
+                cont.resume(throwing: CDPError.disconnected)
+                return
+            }
+            let id = nextId; nextId += 1
+            pending[id] = cont
+            lock.unlock()
             task.send(.data(CDPCodec.evaluateRequest(id: id, expression: js))) { [weak self] err in
                 if let err { self?.fail(id: id, err) }
             }
