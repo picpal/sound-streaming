@@ -1,6 +1,9 @@
 import AVFAudio
 import Foundation
+import MediaPlayer
 import YoutumuKit
+
+enum RemoteCommand { case play, pause, next, previous }
 
 final class StreamPlayer: NSObject, URLSessionDataDelegate {
     private let engine = AVAudioEngine()
@@ -15,6 +18,8 @@ final class StreamPlayer: NSObject, URLSessionDataDelegate {
     private let preBufferFrames: AVAudioFrameCount = 48_000     // 1초 (spec §6 지연 모델)
     var onMarker: ((Marker) -> Void)?
     var onEnded: ((String) -> Void)?
+    var onRemoteCommand: ((RemoteCommand) -> Void)?
+    private var remoteCommandsRegistered = false
     private(set) var bytesReceived: Int = 0
     private(set) var startedAt: Date?
     func stats() -> (seconds: Int, mb: Double) {
@@ -48,9 +53,33 @@ final class StreamPlayer: NSObject, URLSessionDataDelegate {
         try av.setActive(true)
         #endif
         try engine.start()
+        // Now Playing 세션 등록 — frontmost를 잃어도(손바닥 덮기, 2분 timeout) suspend되지 않으려면
+        // 시스템이 이 앱을 "재생 중인 오디오 앱"으로 인식해야 한다. WKBackgroundModes: audio만으로는 부족.
+        registerRemoteCommands()
+        updateNowPlaying(title: "Youtumu", artist: "")
         task?.cancel()                                           // 이전 연결 정리 (취소 오류는 아래에서 필터됨)
         task = session.dataTask(with: url)
         task?.resume()
+    }
+
+    private func registerRemoteCommands() {
+        guard !remoteCommandsRegistered else { return }
+        remoteCommandsRegistered = true
+        let cc = MPRemoteCommandCenter.shared()
+        cc.playCommand.addTarget { [weak self] _ in self?.onRemoteCommand?(.play); return .success }
+        cc.pauseCommand.addTarget { [weak self] _ in self?.onRemoteCommand?(.pause); return .success }
+        cc.nextTrackCommand.addTarget { [weak self] _ in self?.onRemoteCommand?(.next); return .success }
+        cc.previousTrackCommand.addTarget { [weak self] _ in self?.onRemoteCommand?(.previous); return .success }
+    }
+
+    func updateNowPlaying(title: String, artist: String) {
+        var info: [String: Any] = [
+            MPMediaItemPropertyTitle: title.isEmpty ? "Youtumu" : title,
+            MPNowPlayingInfoPropertyIsLiveStream: true,
+            MPNowPlayingInfoPropertyPlaybackRate: 1.0,
+        ]
+        if !artist.isEmpty { info[MPMediaItemPropertyArtist] = artist }
+        MPNowPlayingInfoCenter.default().nowPlayingInfo = info
     }
 
     func stop() { task?.cancel(); node.stop(); engine.stop() }

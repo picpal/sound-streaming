@@ -41,7 +41,10 @@ struct ContentView: View {
         // stateVersion이 낮은 응답으로 최신 상태를 덮지 않는다 (spec §5 응답 역전 방지)
         if let s = try? await ApiClient.player(host: serverHost) {
             await MainActor.run {
-                if s.stateVersion >= (playerState?.stateVersion ?? 0) { playerState = s }
+                if s.stateVersion >= (playerState?.stateVersion ?? 0) {
+                    playerState = s
+                    player.updateNowPlaying(title: s.title, artist: s.artist)   // 시스템 Now Playing에도 곡 정보 반영
+                }
             }
         }
     }
@@ -121,6 +124,16 @@ struct ContentView: View {
             if KeyStore.identity() != nil { enrollStatus = "enrolled (identity OK)" }
             player.onMarker = { m in Task { @MainActor in lastSeq = "seq \(m.seq)" } }
             player.onEnded = { msg in Task { @MainActor in playStatus = msg } }
+            player.onRemoteCommand = { cmd in                    // AirPods 스템·시스템 재생 컨트롤 → 원격 제어로 위임
+                Task { @MainActor in
+                    switch cmd {
+                    case .play: control("/api/player/play")
+                    case .pause: control("/api/player/pause")
+                    case .next: control("/api/player/next")
+                    case .previous: control("/api/player/previous")
+                    }
+                }
+            }
         }
     }
 }
