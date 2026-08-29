@@ -26,7 +26,7 @@
 - 곡 전환 시 내려둔 볼륨 원복 현상 → Phase 5 (Crown 볼륨/§22 volume=Watch-local 구현 시 규명)
 - AirPods 자동 전환이 Mac으로 오디오를 뺏는 현상 → 사용 시 자동 전환 off 권장
 - (Phase 1 검증 중 재현) AirPods가 "연결됨"으로 표시돼도 라우트가 스테일이면 Watch 수신·파싱 정상 + 무음 발생. 다른 기기 재생 후 재Play로 복구됨 → Phase 5 UI에서 현재 출력 라우트 표시 + AVAudioSession route change 알림 처리 필요
-- (Phase 1 검증 중 재현) **손바닥 덮기 = 재생 중단, 자동 화면 꺼짐 = 재생 지속**. 손바닥 덮기는 앱을 즉시 frontmost에서 내리고 시계 화면으로 복귀시켜 진짜 백그라운드로 보냄 → 앱 suspend(소리 즉시 끊김, TCP는 유지, 화면 켜면 자동 재개). 자동 화면 꺼짐/손목 내리기는 frontmost 유지라 계속 재생 — G1 PASS는 이 조건이었음. 현재 구조(AVAudioEngine + longFormAudio)는 `WKBackgroundModes: audio`만으로는 Now Playing 세션 미등록 상태라 frontmost 상실 시 백그라운드 오디오로 인정 안 됨 → Phase 5에서 MPNowPlayingInfoCenter 등록 + MPRemoteCommandCenter 연동으로 진짜 백그라운드 재생 확보 필요. 그전까지 운영 수칙: 손바닥으로 덮지 말고 손목 내리기로 화면 끄기
+- (Phase 1 검증 중 발견·**해결**) frontmost 상실 시(손바닥 덮기 즉시, 손목 내리기 ~2분 뒤) 앱 suspend로 재생 중단 — `WKBackgroundModes: audio`만으로는 부족, Now Playing 세션 등록이 필요했음. MPNowPlayingInfoCenter + MPRemoteCommandCenter 등록으로 해결(`aaeea85`, `0a6dccf`), 실기기에서 손목 내림·손바닥 덮기 모두 재생 지속 확인. 부수 효과: AirPods 스템 제어가 /api/player/*로 위임됨. 주의: 단일 타깃 SwiftUI 워치 앱에서 `WKExtension.shared()` 호출은 즉시 크래시(WKApplication에는 frontmost 연장 API 없음)
 - Mac 볼륨 0에서도 캡처 정상(무음 운영 모드)
 - G1 직후 유휴 구간에서 1회 "네트워크 연결 유실" 발생(수동 Play로 복구) — Phase 6 자동 재접속 필요성 실증
 - YT Music 장시간 재생 시 자동 일시정지 팝업으로 소리 중단 가능(스트림은 유지) — Phase 1 CDP 제어에서 처리 검토
