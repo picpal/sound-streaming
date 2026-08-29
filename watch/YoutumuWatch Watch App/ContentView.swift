@@ -19,6 +19,33 @@ struct ContentView: View {
     @State private var batteryAtPlay: Float = -1
     private let ticker = Timer.publish(every: 5, on: .main, in: .common).autoconnect()
 
+    // Player control UI (Task 8)
+    @State private var playerState: PlayerState?
+    private var nowPlaying: String {
+        guard let s = playerState, !s.title.isEmpty else { return "-" }
+        return "\(s.title) — \(s.artist)"
+    }
+
+    private func control(_ path: String) {
+        Task {
+            do {
+                _ = try await ApiClient.post(host: serverHost, path: path)
+                await refreshPlayer()   // 응답 후 상태 갱신 (optimistic UI는 Phase 5)
+            } catch {
+                await MainActor.run { playStatus = "ctrl err: \(error.localizedDescription)" }
+            }
+        }
+    }
+
+    private func refreshPlayer() async {
+        // stateVersion이 낮은 응답으로 최신 상태를 덮지 않는다 (spec §5 응답 역전 방지)
+        if let s = try? await ApiClient.player(host: serverHost) {
+            await MainActor.run {
+                if s.stateVersion >= (playerState?.stateVersion ?? 0) { playerState = s }
+            }
+        }
+    }
+
     private func currentBattery() -> Float {
         #if os(watchOS)
         WKInterfaceDevice.current().isBatteryMonitoringEnabled = true
@@ -69,12 +96,21 @@ struct ContentView: View {
                         playStatus = "stopped"
                     }
                 }
+                HStack(spacing: 8) {
+                    Button("⏮") { control("/api/player/previous") }
+                    Button(playerState?.playback == .playing ? "⏸" : "▶") {
+                        control(playerState?.playback == .playing ? "/api/player/pause" : "/api/player/play")
+                    }
+                    Button("⏭") { control("/api/player/next") }
+                }
+                Text(nowPlaying).font(.footnote).lineLimit(2)
                 Text("Marker: \(lastSeq)").font(.footnote)
                 Text(playStatus).font(.footnote)
                 Text(metrics).font(.system(size: 11)).foregroundStyle(.secondary)
             }
         }.padding()}
         .onReceive(ticker) { _ in
+            Task { await refreshPlayer() }   // 매 tick 갱신 — 아래 guard(재생 중 아니면 조기 return)와 무관하게 실행되어야 함
             let st = player.stats()
             guard st.seconds > 0 else { return }
             let bat = currentBattery()
