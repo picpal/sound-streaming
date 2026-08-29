@@ -2,9 +2,9 @@
   "project": "youtumu-player",
   "spec": "apple_watch_youtube_music_remote_player_design.md",
   "plan": "docs/superpowers/plans/2026-08-25-phase0-kill-risk-poc.md",
-  "updated": "2026-08-29T11:24:19+09:00",
+  "updated": "2026-08-29T11:37:21+09:00",
   "current": {
-    "phase": "phase0",
+    "phase": "phase1",
     "task": null
   },
   "phases": {
@@ -78,8 +78,50 @@
     },
     "phase1": {
       "name": "Mac Player Control",
-      "status": "pending",
-      "blockedBy": "phase0.gate"
+      "status": "planned",
+      "plan": "docs/superpowers/plans/2026-08-29-phase1-mac-player-control.md",
+      "tasks": [
+        {
+          "id": 1,
+          "name": "MacAgent 패키지 분리 (MacAgentCore + 테스트 타깃)",
+          "status": "pending"
+        },
+        {
+          "id": 2,
+          "name": "PlayerState 모델 + CommandStore 멱등성",
+          "status": "pending"
+        },
+        {
+          "id": 3,
+          "name": "CDP 코덱 + CDPClient (WebSocket)",
+          "status": "pending"
+        },
+        {
+          "id": 4,
+          "name": "YTMSelectors + BrowserController",
+          "status": "pending"
+        },
+        {
+          "id": 5,
+          "name": "PlayerStateService — 폴링·stateVersion·MARKER 분류",
+          "status": "pending"
+        },
+        {
+          "id": 6,
+          "name": "ControlAPI — REST 라우팅·검증·멱등성",
+          "status": "pending"
+        },
+        {
+          "id": 7,
+          "name": "serve 통합 + Chrome 스크립트 + Caddy body 제한 + 체크포인트",
+          "status": "pending"
+        },
+        {
+          "id": 8,
+          "name": "Watch 제어 UI — 버튼 + Now Playing",
+          "status": "pending"
+        }
+      ]
     },
     "phase2": {
       "name": "Library",
