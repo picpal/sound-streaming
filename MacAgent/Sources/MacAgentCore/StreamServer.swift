@@ -8,6 +8,7 @@ public final class StreamServer {
     private let port: Int
     private let lock = NSLock()
     private var receiver: Channel?          // 단일 수신자 (spec §6)
+    public var api: ControlAPI?
 
     public init(port: Int) { self.port = port }
 
@@ -46,27 +47,58 @@ public final class StreamServer {
         typealias InboundIn = HTTPServerRequestPart
         typealias OutboundOut = HTTPServerResponsePart
         let server: StreamServer
+        private var head: HTTPRequestHead?
+        private var body = Data()
+        private static let maxBody = 4096     // Agent측 body 제한 (spec §11 — Caddy와 양쪽)
         init(server: StreamServer) { self.server = server }
 
         func channelRead(context: ChannelHandlerContext, data: NIOAny) {
-            guard case .head(let head) = unwrapInboundIn(data) else { return }
-            switch (head.method, head.uri) {
-            case (.GET, "/audio/live"):
-                var h = HTTPHeaders()
-                h.add(name: "Content-Type", value: "application/octet-stream")
-                h.add(name: "Cache-Control", value: "no-store")
-                context.writeAndFlush(wrapOutboundOut(.head(.init(version: .http1_1, status: .ok, headers: h))), promise: nil)
-                server.setReceiver(context.channel)   // 이후 broadcast가 body chunk를 계속 씀
-            case (.GET, "/healthz"):
-                var h = HTTPHeaders(); h.add(name: "Content-Length", value: "2")
-                context.write(wrapOutboundOut(.head(.init(version: .http1_1, status: .ok, headers: h))), promise: nil)
-                var b = context.channel.allocator.buffer(capacity: 2); b.writeString("ok")
-                context.write(wrapOutboundOut(.body(.byteBuffer(b))), promise: nil)
-                context.writeAndFlush(wrapOutboundOut(.end(nil)), promise: nil)
-            default:
-                let head = HTTPResponseHead(version: .http1_1, status: .notFound)
-                context.write(wrapOutboundOut(.head(head)), promise: nil)
-                context.writeAndFlush(wrapOutboundOut(.end(nil)), promise: nil)
+            switch unwrapInboundIn(data) {
+            case .head(let h):
+                head = h; body.removeAll()
+                if h.method == .GET, h.uri == "/audio/live" {
+                    var hdr = HTTPHeaders()
+                    hdr.add(name: "Content-Type", value: "application/octet-stream")
+                    hdr.add(name: "Cache-Control", value: "no-store")
+                    context.writeAndFlush(wrapOutboundOut(.head(.init(version: .http1_1, status: .ok, headers: hdr))), promise: nil)
+                    server.setReceiver(context.channel)   // 이후 broadcast가 body chunk를 계속 씀
+                    head = nil
+                }
+            case .body(var buf):
+                guard head != nil else { return }         // 스트리밍 연결엔 요청 body 없음
+                if body.count + buf.readableBytes > Self.maxBody {
+                    writeJSON(context.channel, status: .payloadTooLarge, body: Data(#"{"error":"body too large"}"#.utf8))
+                    head = nil
+                    return
+                }
+                if let bytes = buf.readBytes(length: buf.readableBytes) { body.append(contentsOf: bytes) }
+            case .end:
+                guard let h = head else { return }
+                head = nil
+                if h.uri == "/healthz" {
+                    writeJSON(context.channel, status: .ok, body: Data(#"{"ok":true}"#.utf8))
+                    return
+                }
+                let req = ApiRequest(method: h.method.rawValue, path: h.uri, body: body)
+                let ch = context.channel
+                let api = server.api
+                Task {   // BrowserController가 async — NIO 이벤트 루프를 막지 않는다
+                    let resp = await api?.handle(req) ?? ApiResponse(status: 404, body: Data(#"{"error":"unknown endpoint"}"#.utf8))
+                    self.writeJSON(ch, status: .init(statusCode: resp.status), body: resp.body)
+                }
+            }
+        }
+
+        private func writeJSON(_ ch: Channel, status: HTTPResponseStatus, body: Data) {
+            ch.eventLoop.execute {
+                var hdr = HTTPHeaders()
+                hdr.add(name: "Content-Type", value: "application/json")
+                hdr.add(name: "Content-Length", value: "\(body.count)")
+                ch.write(HTTPServerResponsePart.head(.init(version: .http1_1, status: status, headers: hdr)), promise: nil)
+                var buf = ch.allocator.buffer(capacity: body.count)
+                buf.writeBytes(body)
+                ch.write(HTTPServerResponsePart.body(.byteBuffer(buf)), promise: nil)
+                ch.writeAndFlush(HTTPServerResponsePart.end(nil), promise: nil)
             }
         }
     }
