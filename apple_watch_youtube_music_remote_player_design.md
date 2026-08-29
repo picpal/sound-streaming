@@ -56,9 +56,9 @@ Apple Watch Series 7 Cellular 41mm에서 iPhone 없이 LTE/Wi‑Fi만으로 집�
                 youtumu.duckdns.org:8443
                          │
                          ▼
-┌────────────────────── ipTIME ─────────────────────────────────┐
-│ DDNS                                                          │
-│ Public TCP 18443                                              │
+┌────────────────── KT GiGA WiFi 공유기 ────────────────────────┐
+│ DuckDNS (Mac launchd 업데이터가 5분 주기로 IP 갱신)           │
+│ Public TCP 8443                                               │
 │      ↓ Port Forward                                           │
 │ Mac 내부 IP:8443                                              │
 └────────────────────────┬──────────────────────────────────────┘
@@ -89,14 +89,14 @@ Apple Watch Series 7 Cellular 41mm에서 iPhone 없이 LTE/Wi‑Fi만으로 집�
 
 ### 4.1 DDNS
 
-ipTIME DDNS를 사용한다.
+DuckDNS를 사용한다. 공유기(KT GiGA WiFi)에는 DDNS 기능이 없으므로 Mac의 launchd 에이전트(`com.youtumu.duckdns`)가 5분 주기로 공인 IP를 갱신한다. 토큰은 `~/.youtumu-duckdns`(chmod 600)에만 보관한다.
 
 ```text
-youtumu.duckdns.org
+youtumu.duckdns.org (DuckDNS)
        ↓
 현재 집 Public IP
        ↓
-ipTIME Router
+KT GiGA WiFi Router
 ```
 
 Watch 앱에는 공인 IP를 하드코딩하지 않고 DDNS hostname만 설정한다.
@@ -105,21 +105,21 @@ Watch 앱에는 공인 IP를 하드코딩하지 않고 DDNS hostname만 설정�
 
 공유기에는 서비스용 TCP 포트 **하나만** 공개한다.
 
-예시:
+현재 구성:
 
 ```text
-Internet TCP 18443
+Internet TCP 8443
         ↓
-ipTIME
+KT GiGA WiFi
         ↓
-Mac 192.168.0.x:8443
+Mac 172.30.1.15:8443
 ```
 
 Mac 내부 IP는 DHCP 고정 할당 또는 수동 고정한다.
 
 ### 4.3 사전 확인
 
-ipTIME WAN IP가 실제 공인 IP인지 확인한다.
+공유기 WAN IP가 실제 공인 IP인지 확인한다. (2026-08 확인: 공인 IP 직할당, CGNAT 아님, NAT loopback 지원)
 
 - `10.0.0.0/8`
 - `172.16.0.0/12`
@@ -632,7 +632,7 @@ Browser Controller
 
 ## 12. 공유기 / Mac Hardening
 
-### ipTIME
+### 공유기 (KT GiGA WiFi)
 
 - 서비스 TCP 포트 1개만 Forward (Enrollment 포트는 절대 Forward하지 않음)
 - DMZ OFF
@@ -991,7 +991,7 @@ PlayerState               # 서버 상태 스냅샷
 ## Phase 4 — Security
 
 - Private CA 구축 (Root + Server/Client Leaf)
-- ipTIME DDNS
+- DuckDNS DDNS (Mac launchd 업데이터)
 - Port Forwarding
 - Caddy (TLS 1.3 + mTLS)
 - Watch Secure Enclave 키 / Keychain
@@ -1043,7 +1043,7 @@ PlayerState               # 서버 상태 스냅샷
 
 - Mac을 실제 Player로 사용
 - 별도 Cloud Application Server 없음
-- ipTIME DDNS
+- DuckDNS DDNS (Mac launchd 업데이터)
 - 단일 Port Forwarding
 - Caddy reverse proxy
 - HTTPS + mTLS
