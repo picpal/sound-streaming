@@ -25,6 +25,7 @@
 
 - 곡 전환 시 내려둔 볼륨 원복 현상 → Phase 5 (Crown 볼륨/§22 volume=Watch-local 구현 시 규명)
 - AirPods 자동 전환이 Mac으로 오디오를 뺏는 현상 → 사용 시 자동 전환 off 권장
+- (Phase 1 검증 중 재현) AirPods가 "연결됨"으로 표시돼도 라우트가 스테일이면 Watch 수신·파싱 정상 + 무음 발생. 다른 기기 재생 후 재Play로 복구됨 → Phase 5 UI에서 현재 출력 라우트 표시 + AVAudioSession route change 알림 처리 필요
 - Enrollment은 LAN 전용(설계 의도) — iPhone/Watch가 LTE 상태면 "오프라인" 표시됨
 - Mac 볼륨 0에서도 캡처 정상(무음 운영 모드)
 - G1 직후 유휴 구간에서 1회 "네트워크 연결 유실" 발생(수동 Play로 복구) — Phase 6 자동 재접속 필요성 실증
