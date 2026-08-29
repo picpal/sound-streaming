@@ -1,6 +1,7 @@
 import Foundation
 import AVFoundation
 import YoutumuKit
+import MacAgentCore
 
 let args = CommandLine.arguments
 switch args.count > 1 ? args[1] : "" {

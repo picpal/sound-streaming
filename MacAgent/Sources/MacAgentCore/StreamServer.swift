@@ -3,15 +3,15 @@ import NIOCore
 import NIOPosix
 import NIOHTTP1
 
-final class StreamServer {
+public final class StreamServer {
     private let group = MultiThreadedEventLoopGroup(numberOfThreads: 1)
     private let port: Int
     private let lock = NSLock()
     private var receiver: Channel?          // 단일 수신자 (spec §6)
 
-    init(port: Int) { self.port = port }
+    public init(port: Int) { self.port = port }
 
-    func broadcast(_ data: Data) {
+    public func broadcast(_ data: Data) {
         lock.lock(); let ch = receiver; lock.unlock()
         guard let ch, ch.isActive else { return }
         var buf = ch.allocator.buffer(capacity: data.count)
@@ -28,7 +28,7 @@ final class StreamServer {
         lock.unlock()
     }
 
-    func run() throws {
+    public func run() throws {
         let server = self
         let bootstrap = ServerBootstrap(group: group)
             .serverChannelOption(ChannelOptions.socketOption(.so_reuseaddr), value: 1)

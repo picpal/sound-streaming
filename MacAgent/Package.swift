@@ -7,10 +7,14 @@ let package = Package(
         .package(path: "../YoutumuKit"),
         .package(url: "https://github.com/apple/swift-nio.git", from: "2.60.0"),
     ],
-    targets: [.executableTarget(name: "MacAgent", dependencies: [
-        "YoutumuKit",
-        .product(name: "NIOCore", package: "swift-nio"),
-        .product(name: "NIOPosix", package: "swift-nio"),
-        .product(name: "NIOHTTP1", package: "swift-nio"),
-    ])]
+    targets: [
+        .target(name: "MacAgentCore", dependencies: [
+            "YoutumuKit",
+            .product(name: "NIOCore", package: "swift-nio"),
+            .product(name: "NIOPosix", package: "swift-nio"),
+            .product(name: "NIOHTTP1", package: "swift-nio"),
+        ]),
+        .executableTarget(name: "MacAgent", dependencies: ["MacAgentCore", "YoutumuKit"]),
+        .testTarget(name: "MacAgentTests", dependencies: ["MacAgentCore", "YoutumuKit"]),
+    ]
 )

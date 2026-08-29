@@ -1,11 +1,11 @@
 import AVFoundation
 import YoutumuKit
 
-final class AACEncoder {
+public final class AACEncoder {
     private let converter: AVAudioConverter
     private let aacFormat: AVAudioFormat
 
-    init?(inputFormat: AVAudioFormat) {
+    public init?(inputFormat: AVAudioFormat) {
         var desc = AudioStreamBasicDescription(
             mSampleRate: 48_000, mFormatID: kAudioFormatMPEG4AAC, mFormatFlags: 0,
             mBytesPerPacket: 0, mFramesPerPacket: 1024, mBytesPerFrame: 0,
@@ -17,7 +17,7 @@ final class AACEncoder {
     }
 
     /// PCM 버퍼 하나를 ADTS AAC 프레임들로 인코딩
-    func encode(_ pcm: AVAudioPCMBuffer) -> [Data] {
+    public func encode(_ pcm: AVAudioPCMBuffer) -> [Data] {
         var out: [Data] = []
         var fed = false
         while true {

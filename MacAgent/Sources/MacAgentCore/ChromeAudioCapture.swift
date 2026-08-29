@@ -3,11 +3,13 @@ import AVFoundation
 
 enum CaptureError: Error { case chromeNotFound, noDisplay }
 
-final class ChromeAudioCapture: NSObject, SCStreamOutput {
+public final class ChromeAudioCapture: NSObject, SCStreamOutput {
     private var stream: SCStream?
-    var onPCM: ((AVAudioPCMBuffer) -> Void)?
+    public var onPCM: ((AVAudioPCMBuffer) -> Void)?
 
-    func start() async throws {
+    public override init() {}
+
+    public func start() async throws {
         let content = try await SCShareableContent.current
         guard let app = content.applications.first(where: { $0.bundleIdentifier == "com.google.Chrome" })
         else { throw CaptureError.chromeNotFound }
@@ -26,9 +28,9 @@ final class ChromeAudioCapture: NSObject, SCStreamOutput {
         stream = s
     }
 
-    func stop() async { try? await stream?.stopCapture(); stream = nil }
+    public func stop() async { try? await stream?.stopCapture(); stream = nil }
 
-    func stream(_ stream: SCStream, didOutputSampleBuffer sb: CMSampleBuffer, of type: SCStreamOutputType) {
+    public func stream(_ stream: SCStream, didOutputSampleBuffer sb: CMSampleBuffer, of type: SCStreamOutputType) {
         guard type == .audio,
               let desc = CMSampleBufferGetFormatDescription(sb),
               let asbd = CMAudioFormatDescriptionGetStreamBasicDescription(desc),

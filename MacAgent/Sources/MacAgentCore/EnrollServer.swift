@@ -3,15 +3,15 @@ import NIOCore
 import NIOPosix
 import NIOHTTP1
 
-final class EnrollServer {
+public final class EnrollServer {
     private let group = MultiThreadedEventLoopGroup(numberOfThreads: 1)
     private let code: String
     private var attempts = 0
     private var issued = false
 
-    init(code: String) { self.code = code }
+    public init(code: String) { self.code = code }
 
-    func run() throws {
+    public func run() throws {
         let bootstrap = ServerBootstrap(group: group)
             .serverChannelOption(ChannelOptions.socketOption(.so_reuseaddr), value: 1)
             .childChannelInitializer { ch in
