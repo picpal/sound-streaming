@@ -4,7 +4,9 @@ import YoutumuKit
 /// 실제 YT Music 플레이어 상태가 Source of Truth (spec §8) — Mac에서 직접 조작해도 폴링으로 반영.
 public final class PlayerStateService {
     private let lock = NSLock()
-    private var current = PlayerState(stateVersion: 0, playback: .stopped, trackId: "",
+    // 재시작 시 이전 프로세스보다 큰 값에서 시작 — Watch의 stateVersion 역전 가드가 동결되지 않게 (spec §5)
+    private var current = PlayerState(stateVersion: UInt64(Date().timeIntervalSince1970),
+                                      playback: .stopped, trackId: "",
                                       title: "", artist: "", positionSec: 0, durationSec: 0)
     private var lastCommandAt: Date?
     private var seenFirstSnapshot = false

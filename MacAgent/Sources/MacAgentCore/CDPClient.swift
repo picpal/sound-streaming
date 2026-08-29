@@ -39,8 +39,17 @@ public final class CDPClient: NSObject {
             let id = nextId; nextId += 1
             pending[id] = cont
             lock.unlock()
-            task.send(.data(CDPCodec.evaluateRequest(id: id, expression: js))) { [weak self] err in
+            let payload = CDPCodec.evaluateRequest(id: id, expression: js)
+            task.send(.string(String(decoding: payload, as: UTF8.self))) { [weak self] err in
                 if let err { self?.fail(id: id, err) }
+            }
+            // 폴링 루프 영구 정지 방지: Chrome이 프레임을 받고도 응답하지 않으면(멈춘 탭, 모달 등)
+            // continuation이 영원히 살아남아 폴링/HTTP 명령이 모두 멈추므로 5초 타임아웃으로 강제 실패 처리.
+            // fail(id:)는 lock 하에서 먼저 pending을 제거하므로, 정상 응답 후의 지연 타임아웃은
+            // removeValue가 nil을 반환해 아무 동작도 하지 않는 무해한 no-op이 된다.
+            Task { [weak self] in
+                try? await Task.sleep(for: .seconds(5))
+                self?.fail(id: id, CDPError.disconnected)
             }
         }
     }
