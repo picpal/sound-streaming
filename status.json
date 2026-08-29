@@ -1,12 +1,12 @@
 {
   "project": "youtumu-player",
   "spec": "apple_watch_youtube_music_remote_player_design.md",
-  "plan": "docs/superpowers/plans/2026-08-25-phase0-kill-risk-poc.md",
-  "updated": "2026-08-29T22:49:52+09:00",
+  "plan": "docs/superpowers/plans/2026-08-30-phase2-library.md",
+  "updated": "2026-08-30T00:20:27+09:00",
   "current": {
     "phase": "phase2",
     "task": null,
-    "status": "not_started"
+    "status": "planned"
   },
   "phases": {
     "phase0": {
@@ -130,8 +130,55 @@
     },
     "phase2": {
       "name": "Library",
-      "status": "blocked",
-      "blockedBy": "phase1"
+      "status": "planned",
+      "plan": "docs/superpowers/plans/2026-08-30-phase2-library.md",
+      "tasks": [
+        {
+          "id": 1,
+          "name": "YoutumuKit wire 모델",
+          "status": "pending"
+        },
+        {
+          "id": 2,
+          "name": "CDP awaitPromise",
+          "status": "pending"
+        },
+        {
+          "id": 3,
+          "name": "innertube 라이브러리 조회",
+          "status": "pending"
+        },
+        {
+          "id": 4,
+          "name": "Queue 조회·이동 + Playlist 재생",
+          "status": "pending"
+        },
+        {
+          "id": 5,
+          "name": "MetadataCache",
+          "status": "pending"
+        },
+        {
+          "id": 6,
+          "name": "ArtworkService",
+          "status": "pending"
+        },
+        {
+          "id": 7,
+          "name": "ControlAPI 라우트 확장",
+          "status": "pending"
+        },
+        {
+          "id": 8,
+          "name": "NIO Handler EmbeddedChannel 테스트",
+          "status": "pending"
+        },
+        {
+          "id": 9,
+          "name": "조립 + 라이브 체크포인트",
+          "status": "pending"
+        }
+      ]
     },
     "phase3": {
       "name": "Audio 정식화",
