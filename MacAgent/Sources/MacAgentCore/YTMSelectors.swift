@@ -50,4 +50,93 @@ enum YTM {
       return JSON.stringify(false);
     })()
     """
+
+    /// 라이브러리 플레이리스트 목록 — 페이지 컨텍스트에서 innertube browse 호출 (네비게이션 없음 = 재생 무중단).
+    /// 반환: {"playlists":[{playlistId,title,trackCount,thumbnailUrl}]} 또는 {"error":"..."}
+    static let listPlaylists = """
+    (async () => {
+      const cfg = (window.ytcfg && ytcfg.data_) || (window.yt && yt.config_);
+      if (!cfg || !cfg.INNERTUBE_API_KEY) return JSON.stringify({error: 'no ytcfg'});
+      const res = await fetch('/youtubei/v1/browse?key=' + cfg.INNERTUBE_API_KEY, {
+        method: 'POST', headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({context: cfg.INNERTUBE_CONTEXT, browseId: 'FEmusic_liked_playlists'})
+      });
+      const j = await res.json();
+      const found = [];
+      (function walk(o) {
+        if (!o || typeof o !== 'object') return;
+        if (o.musicTwoRowItemRenderer) {
+          const r = o.musicTwoRowItemRenderer;
+          const bid = (r.navigationEndpoint && r.navigationEndpoint.browseEndpoint && r.navigationEndpoint.browseEndpoint.browseId) || '';
+          if (bid.startsWith('VL')) {
+            const sub = ((r.subtitle && r.subtitle.runs) || []).map(x => x.text).join('');
+            const m = sub.match(/(\\d+)/);
+            const th = (r.thumbnailRenderer && r.thumbnailRenderer.musicThumbnailRenderer
+                        && r.thumbnailRenderer.musicThumbnailRenderer.thumbnail
+                        && r.thumbnailRenderer.musicThumbnailRenderer.thumbnail.thumbnails) || [];
+            found.push({
+              playlistId: bid.slice(2),
+              title: (r.title && r.title.runs && r.title.runs[0] && r.title.runs[0].text) || '',
+              trackCount: m ? parseInt(m[1], 10) : 0,
+              thumbnailUrl: th.length ? th[th.length - 1].url : ''
+            });
+          }
+        }
+        for (const k in o) walk(o[k]);
+      })(j);
+      return JSON.stringify({playlists: found});
+    })()
+    """
+
+    /// 플레이리스트 트랙 목록. playlistId는 호출 전에 ^[A-Za-z0-9_-]{1,64}$ 검증 필수 (spec §11).
+    /// 첫 browse 응답만 사용 (continuation 미지원 — 계획 설계 결정 2).
+    /// 반환: {"tracks":[{trackId,title,artist,durationSec,unavailable}]} 또는 {"error":"..."}
+    static func playlistTracks(playlistId: String) -> String {
+        """
+        (async () => {
+          const cfg = (window.ytcfg && ytcfg.data_) || (window.yt && yt.config_);
+          if (!cfg || !cfg.INNERTUBE_API_KEY) return JSON.stringify({error: 'no ytcfg'});
+          const res = await fetch('/youtubei/v1/browse?key=' + cfg.INNERTUBE_API_KEY, {
+            method: 'POST', headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({context: cfg.INNERTUBE_CONTEXT, browseId: 'VL\(playlistId)'})
+          });
+          const j = await res.json();
+          const found = [];
+          (function walk(o) {
+            if (!o || typeof o !== 'object') return;
+            if (o.musicResponsiveListItemRenderer) {
+              const r = o.musicResponsiveListItemRenderer;
+              const cols = r.flexColumns || [];
+              const col = i => cols[i] && cols[i].musicResponsiveListItemFlexColumnRenderer
+                             && cols[i].musicResponsiveListItemFlexColumnRenderer.text
+                             && cols[i].musicResponsiveListItemFlexColumnRenderer.text.runs
+                             && cols[i].musicResponsiveListItemFlexColumnRenderer.text.runs[0];
+              const videoId = (r.playlistItemData && r.playlistItemData.videoId) || '';
+              const durText = (r.fixedColumns && r.fixedColumns[0]
+                               && r.fixedColumns[0].musicResponsiveListItemFixedColumnRenderer
+                               && r.fixedColumns[0].musicResponsiveListItemFixedColumnRenderer.text
+                               && r.fixedColumns[0].musicResponsiveListItemFixedColumnRenderer.text.runs
+                               && r.fixedColumns[0].musicResponsiveListItemFixedColumnRenderer.text.runs[0]
+                               && r.fixedColumns[0].musicResponsiveListItemFixedColumnRenderer.text.runs[0].text) || '';
+              let dur = 0;
+              for (const p of durText.split(':')) { const n = parseInt(p, 10); dur = dur * 60 + (isFinite(n) ? n : 0); }
+              found.push({
+                trackId: videoId,
+                title: (col(0) && col(0).text) || '',
+                artist: (col(1) && col(1).text) || '',
+                durationSec: dur,
+                unavailable: !videoId || r.musicItemRendererDisplayPolicy === 'MUSIC_ITEM_RENDERER_DISPLAY_POLICY_GREY_OUT'
+              });
+            }
+            for (const k in o) walk(o[k]);
+          })(j);
+          return JSON.stringify({tracks: found});
+        })()
+        """
+    }
+
+    /// Playlist 전체 재생. playlistId는 호출 전 검증 필수. Phase 1 playTrack과 동일한 full-navigation 방식 (M1 리스크 공유).
+    static func playPlaylist(playlistId: String) -> String {
+        "location.href = 'https://music.youtube.com/watch?list=\(playlistId)'"
+    }
 }

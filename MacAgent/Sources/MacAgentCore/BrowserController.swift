@@ -1,4 +1,5 @@
 import Foundation
+import YoutumuKit
 
 public struct YTMSnapshot: Decodable, Equatable {
     public let videoId: String
@@ -50,4 +51,40 @@ public final class BrowserController: PlayerControlling {
     public func dismissYouTherePopup() async throws -> Bool {
         try await eval(YTM.dismissYouThere) == "true"
     }
+
+    public func listPlaylists() async throws -> [PlaylistInfo] {
+        guard let json = try await eval(YTM.listPlaylists, awaitPromise: true),
+              let env = try? JSONDecoder().decode(PlaylistListEnvelope.self, from: Data(json.utf8))
+        else { throw CDPError.badResponse }
+        return env.playlists
+    }
+
+    public func playlistTracks(playlistId: String) async throws -> [TrackSummary] {
+        guard let json = try await eval(YTM.playlistTracks(playlistId: playlistId), awaitPromise: true),
+              let env = try? JSONDecoder().decode(TrackListEnvelope.self, from: Data(json.utf8))
+        else { throw CDPError.badResponse }
+        return env.tracks
+    }
 }
+
+public struct PlaylistInfo: Decodable, Equatable {
+    public let playlistId: String
+    public let title: String
+    public let trackCount: Int
+    public let thumbnailUrl: String      // Watch에 직접 노출하지 않는다 — ArtworkService 등록용 (spec §9 단일 origin)
+    public init(playlistId: String, title: String, trackCount: Int, thumbnailUrl: String) {
+        self.playlistId = playlistId; self.title = title
+        self.trackCount = trackCount; self.thumbnailUrl = thumbnailUrl
+    }
+}
+
+public protocol LibraryProviding {
+    func listPlaylists() async throws -> [PlaylistInfo]
+    func playlistTracks(playlistId: String) async throws -> [TrackSummary]
+    func queueItems() async throws -> [QueueItem]
+    func jumpQueue(position: Int) async throws -> Bool      // false = 해당 position 없음 (경합)
+    func playPlaylist(playlistId: String) async throws
+}
+
+struct PlaylistListEnvelope: Decodable { let playlists: [PlaylistInfo] }
+struct TrackListEnvelope: Decodable { let tracks: [TrackSummary] }
