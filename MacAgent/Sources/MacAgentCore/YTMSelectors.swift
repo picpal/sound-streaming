@@ -51,14 +51,29 @@ enum YTM {
     })()
     """
 
+    /// innertube fetch용 SAPISIDHASH 인증 헤더 조각 — 없으면 로그아웃 취급되어 라이브러리가 빈 응답
+    /// (지역에 따라 "Premium 전용" 거절, T9 실측). cfg가 스코프에 있는 async IIFE 안에서만 사용.
+    private static let innertubeAuthJS = """
+      const sapisid = (document.cookie.split('; ').find(c => c.startsWith('SAPISID=')) ||
+                       document.cookie.split('; ').find(c => c.startsWith('__Secure-3PAPISID=')) || '').split('=')[1] || '';
+      const ts = Math.floor(Date.now() / 1000);
+      const sigBuf = await crypto.subtle.digest('SHA-1', new TextEncoder().encode(ts + ' ' + sapisid + ' ' + location.origin));
+      const sig = [...new Uint8Array(sigBuf)].map(b => b.toString(16).padStart(2, '0')).join('');
+      const authHeaders = {'Content-Type': 'application/json',
+        'Authorization': 'SAPISIDHASH ' + ts + '_' + sig,
+        'X-Goog-AuthUser': String(cfg.SESSION_INDEX || '0'),
+        'X-Origin': location.origin};
+    """
+
     /// 라이브러리 플레이리스트 목록 — 페이지 컨텍스트에서 innertube browse 호출 (네비게이션 없음 = 재생 무중단).
     /// 반환: {"playlists":[{playlistId,title,trackCount,thumbnailUrl}]} 또는 {"error":"..."}
     static let listPlaylists = """
     (async () => {
       const cfg = (window.ytcfg && ytcfg.data_) || (window.yt && yt.config_);
       if (!cfg || !cfg.INNERTUBE_API_KEY) return JSON.stringify({error: 'no ytcfg'});
+    \(innertubeAuthJS)
       const res = await fetch('/youtubei/v1/browse?key=' + cfg.INNERTUBE_API_KEY, {
-        method: 'POST', headers: {'Content-Type': 'application/json'},
+        method: 'POST', headers: authHeaders,
         body: JSON.stringify({context: cfg.INNERTUBE_CONTEXT, browseId: 'FEmusic_liked_playlists'})
       });
       const j = await res.json();
@@ -96,8 +111,9 @@ enum YTM {
         (async () => {
           const cfg = (window.ytcfg && ytcfg.data_) || (window.yt && yt.config_);
           if (!cfg || !cfg.INNERTUBE_API_KEY) return JSON.stringify({error: 'no ytcfg'});
+        \(innertubeAuthJS)
           const res = await fetch('/youtubei/v1/browse?key=' + cfg.INNERTUBE_API_KEY, {
-            method: 'POST', headers: {'Content-Type': 'application/json'},
+            method: 'POST', headers: authHeaders,
             body: JSON.stringify({context: cfg.INNERTUBE_CONTEXT, browseId: 'VL\(playlistId)'})
           });
           const j = await res.json();
