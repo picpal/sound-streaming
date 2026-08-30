@@ -15,6 +15,12 @@ let package = Package(
             .product(name: "NIOHTTP1", package: "swift-nio"),
         ]),
         .executableTarget(name: "MacAgent", dependencies: ["MacAgentCore", "YoutumuKit"]),
-        .testTarget(name: "MacAgentTests", dependencies: ["MacAgentCore", "YoutumuKit"]),
+        .testTarget(name: "MacAgentTests", dependencies: [
+            "MacAgentCore",
+            "YoutumuKit",
+            .product(name: "NIOCore", package: "swift-nio"),
+            .product(name: "NIOEmbedded", package: "swift-nio"),
+            .product(name: "NIOHTTP1", package: "swift-nio"),
+        ]),
     ]
 )

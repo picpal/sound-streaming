@@ -79,12 +79,7 @@ public final class StreamServer {
                     writeJSON(context.channel, status: .ok, body: Data(#"{"ok":true}"#.utf8))
                     return
                 }
-                let parts = h.uri.split(separator: "?", maxSplits: 1)
-                let path = String(parts[0])
-                var query: [String: String] = [:]
-                if let items = URLComponents(string: h.uri)?.queryItems {
-                    for it in items { query[it.name] = it.value ?? "" }
-                }
+                let (path, query) = Self.splitURI(h.uri)
                 let req = ApiRequest(method: h.method.rawValue, path: path, body: body, query: query)
                 let ch = context.channel
                 let api = server.api
@@ -93,6 +88,17 @@ public final class StreamServer {
                     self.writeJSON(ch, status: .init(statusCode: resp.status), body: resp.body, contentType: resp.contentType)
                 }
             }
+        }
+
+        /// uri → (path, query). 빈/이상 uri에서도 크래시하지 않는다 (llhttp lenient 모드 방어).
+        static func splitURI(_ uri: String) -> (path: String, query: [String: String]) {
+            let parts = uri.split(separator: "?", maxSplits: 1)
+            let path = parts.first.map(String.init) ?? uri
+            var query: [String: String] = [:]
+            if let items = URLComponents(string: uri)?.queryItems {
+                for it in items { query[it.name] = it.value ?? "" }
+            }
+            return (path, query)
         }
 
         private func writeJSON(_ ch: Channel, status: HTTPResponseStatus, body: Data,

@@ -67,4 +67,22 @@ final class StreamServerHandlerTests: XCTestCase {
         XCTAssertEqual(try readBodyData(ch2), Data([0x09]))
         XCTAssertNil(try? ch1.readOutbound(as: HTTPServerResponsePart.self) as Any?)
     }
+
+    func testSplitURIPlain() {
+        let r = StreamServer.Handler.splitURI("/api/playlists")
+        XCTAssertEqual(r.path, "/api/playlists")
+        XCTAssertTrue(r.query.isEmpty)
+    }
+
+    func testSplitURIWithQuery() {
+        let r = StreamServer.Handler.splitURI("/api/playlists/PL1?offset=1&limit=2")
+        XCTAssertEqual(r.path, "/api/playlists/PL1")
+        XCTAssertEqual(r.query["offset"], "1")
+        XCTAssertEqual(r.query["limit"], "2")
+    }
+
+    func testSplitURIDegenerateDoesNotCrash() {
+        XCTAssertEqual(StreamServer.Handler.splitURI("?").path, "?")
+        XCTAssertEqual(StreamServer.Handler.splitURI("").path, "")
+    }
 }
