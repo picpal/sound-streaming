@@ -11,27 +11,53 @@ public final class MetadataCache {
 
     public init(ttl: TimeInterval = 300) { self.ttl = ttl }
 
+    private func cachedPlaylists(now: Date) -> [PlaylistInfo]? {
+        lock.lock()
+        defer { lock.unlock() }
+        if let e = playlistsEntry, now.timeIntervalSince(e.at) < ttl {
+            return e.value
+        }
+        return nil
+    }
+
+    private func storePlaylists(_ value: [PlaylistInfo], at: Date) {
+        lock.lock()
+        defer { lock.unlock() }
+        playlistsEntry = (value, at)
+    }
+
     public func playlists(now: Date = Date(),
                           fill: () async throws -> [PlaylistInfo]) async throws -> [PlaylistInfo] {
-        lock.lock()
-        if let e = playlistsEntry, now.timeIntervalSince(e.at) < ttl {
-            let v = e.value; lock.unlock(); return v
+        if let cached = cachedPlaylists(now: now) {
+            return cached
         }
-        lock.unlock()
         let v = try await fill()
-        lock.lock(); playlistsEntry = (v, now); lock.unlock()
+        storePlaylists(v, at: now)
         return v
+    }
+
+    private func cachedTracks(playlistId: String, now: Date) -> [TrackSummary]? {
+        lock.lock()
+        defer { lock.unlock() }
+        if let e = tracksEntries[playlistId], now.timeIntervalSince(e.at) < ttl {
+            return e.value
+        }
+        return nil
+    }
+
+    private func storeTracks(_ value: [TrackSummary], forPlaylistId playlistId: String, at: Date) {
+        lock.lock()
+        defer { lock.unlock() }
+        tracksEntries[playlistId] = (value, at)
     }
 
     public func tracks(playlistId: String, now: Date = Date(),
                        fill: () async throws -> [TrackSummary]) async throws -> [TrackSummary] {
-        lock.lock()
-        if let e = tracksEntries[playlistId], now.timeIntervalSince(e.at) < ttl {
-            let v = e.value; lock.unlock(); return v
+        if let cached = cachedTracks(playlistId: playlistId, now: now) {
+            return cached
         }
-        lock.unlock()
         let v = try await fill()
-        lock.lock(); tracksEntries[playlistId] = (v, now); lock.unlock()
+        storeTracks(v, forPlaylistId: playlistId, at: now)
         return v
     }
 }
