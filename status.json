@@ -5,7 +5,7 @@
   "updated": "2026-08-30T00:20:27+09:00",
   "current": {
     "phase": "phase2",
-    "status": "tasks_done_final_review_pending"
+    "status": "done"
   },
   "phases": {
     "phase0": {
@@ -129,7 +129,7 @@
     },
     "phase2": {
       "name": "Library",
-      "status": "in_progress",
+      "status": "done",
       "plan": "docs/superpowers/plans/2026-08-30-phase2-library.md",
       "tasks": [
         {
