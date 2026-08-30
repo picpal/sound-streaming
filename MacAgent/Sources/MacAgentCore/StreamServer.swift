@@ -43,7 +43,7 @@ public final class StreamServer {
         try channel.closeFuture.wait()
     }
 
-    private final class Handler: ChannelInboundHandler {
+    final class Handler: ChannelInboundHandler {
         typealias InboundIn = HTTPServerRequestPart
         typealias OutboundOut = HTTPServerResponsePart
         let server: StreamServer
