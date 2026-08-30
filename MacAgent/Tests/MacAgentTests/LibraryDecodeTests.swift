@@ -22,4 +22,15 @@ final class LibraryDecodeTests: XCTestCase {
         XCTAssertTrue(YTM.playlistTracks(playlistId: "PLabc").contains("'VLPLabc'"))
         XCTAssertTrue(YTM.playPlaylist(playlistId: "PLabc").contains("list=PLabc"))
     }
+
+    func testDecodeQueueList() throws {
+        let json = #"{"queue":[{"position":0,"title":"A","artist":"X","current":true},{"position":1,"title":"B","artist":"Y","current":false}]}"#
+        let env = try JSONDecoder().decode(QueueListEnvelope.self, from: Data(json.utf8))
+        XCTAssertEqual(env.queue[0].current, true)
+        XCTAssertEqual(env.queue[1].position, 1)
+    }
+
+    func testJumpQueueSnippetInterpolatesPosition() {
+        XCTAssertTrue(YTM.jumpQueue(position: 3).contains("[3]"))
+    }
 }

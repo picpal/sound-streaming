@@ -24,7 +24,7 @@ public protocol PlayerControlling {
     func playTrack(videoId: String) async throws
 }
 
-public final class BrowserController: PlayerControlling {
+public final class BrowserController: PlayerControlling, LibraryProviding {
     private let cdp: CDPClient
     public init(cdp: CDPClient) { self.cdp = cdp }
 
@@ -65,6 +65,21 @@ public final class BrowserController: PlayerControlling {
         else { throw CDPError.badResponse }
         return env.tracks
     }
+
+    public func queueItems() async throws -> [QueueItem] {
+        guard let json = try await eval(YTM.queueSnapshot),
+              let env = try? JSONDecoder().decode(QueueListEnvelope.self, from: Data(json.utf8))
+        else { throw CDPError.badResponse }
+        return env.queue
+    }
+
+    public func jumpQueue(position: Int) async throws -> Bool {
+        try await eval(YTM.jumpQueue(position: position)) == "true"
+    }
+
+    public func playPlaylist(playlistId: String) async throws {
+        _ = try await eval(YTM.playPlaylist(playlistId: playlistId))
+    }
 }
 
 public struct PlaylistInfo: Decodable, Equatable {
@@ -88,3 +103,4 @@ public protocol LibraryProviding {
 
 struct PlaylistListEnvelope: Decodable { let playlists: [PlaylistInfo] }
 struct TrackListEnvelope: Decodable { let tracks: [TrackSummary] }
+struct QueueListEnvelope: Decodable { let queue: [QueueItem] }

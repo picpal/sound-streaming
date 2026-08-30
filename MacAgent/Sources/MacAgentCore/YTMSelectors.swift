@@ -139,4 +139,30 @@ enum YTM {
     static func playPlaylist(playlistId: String) -> String {
         "location.href = 'https://music.youtube.com/watch?list=\(playlistId)'"
     }
+
+    /// 현재 Queue — 이미 렌더된 DOM에서 읽는다 (fetch 경로 없음). 반환: {"queue":[{position,title,artist,current}]}
+    /// 셀렉터 검증: T9 체크포인트에서 DevTools로 확인 (selected 속성이 현재 곡 표시인지 포함)
+    static let queueSnapshot = """
+    (() => {
+      const items = [...document.querySelectorAll('ytmusic-player-queue ytmusic-player-queue-item')];
+      return JSON.stringify({queue: items.map((el, i) => ({
+        position: i,
+        title: el.querySelector('.song-title')?.textContent?.trim() || '',
+        artist: el.querySelector('.byline')?.textContent?.trim() || '',
+        current: el.hasAttribute('selected')
+      }))});
+    })()
+    """
+
+    /// Queue의 position번째 곡으로 이동. 반환 "true"/"false"(문자열) — false = 해당 position 없음(경합).
+    static func jumpQueue(position: Int) -> String {
+        """
+        (() => {
+          const el = document.querySelectorAll('ytmusic-player-queue ytmusic-player-queue-item')[\(position)];
+          if (!el) return JSON.stringify(false);
+          (el.querySelector('ytmusic-play-button-renderer') || el).click();
+          return JSON.stringify(true);
+        })()
+        """
+    }
 }
