@@ -79,20 +79,27 @@ public final class StreamServer {
                     writeJSON(context.channel, status: .ok, body: Data(#"{"ok":true}"#.utf8))
                     return
                 }
-                let req = ApiRequest(method: h.method.rawValue, path: h.uri, body: body)
+                let parts = h.uri.split(separator: "?", maxSplits: 1)
+                let path = String(parts[0])
+                var query: [String: String] = [:]
+                if let items = URLComponents(string: h.uri)?.queryItems {
+                    for it in items { query[it.name] = it.value ?? "" }
+                }
+                let req = ApiRequest(method: h.method.rawValue, path: path, body: body, query: query)
                 let ch = context.channel
                 let api = server.api
                 Task {   // BrowserController가 async — NIO 이벤트 루프를 막지 않는다
                     let resp = await api?.handle(req) ?? ApiResponse(status: 404, body: Data(#"{"error":"unknown endpoint"}"#.utf8))
-                    self.writeJSON(ch, status: .init(statusCode: resp.status), body: resp.body)
+                    self.writeJSON(ch, status: .init(statusCode: resp.status), body: resp.body, contentType: resp.contentType)
                 }
             }
         }
 
-        private func writeJSON(_ ch: Channel, status: HTTPResponseStatus, body: Data) {
+        private func writeJSON(_ ch: Channel, status: HTTPResponseStatus, body: Data,
+                               contentType: String = "application/json") {
             ch.eventLoop.execute {
                 var hdr = HTTPHeaders()
-                hdr.add(name: "Content-Type", value: "application/json")
+                hdr.add(name: "Content-Type", value: contentType)
                 hdr.add(name: "Content-Length", value: "\(body.count)")
                 ch.write(HTTPServerResponsePart.head(.init(version: .http1_1, status: status, headers: hdr)), promise: nil)
                 var buf = ch.allocator.buffer(capacity: body.count)

@@ -57,7 +57,8 @@ case "serve":
     let cdp = CDPClient()
     let controller = BrowserController(cdp: cdp)
     let svc = PlayerStateService()
-    server.api = ControlAPI(store: CommandStore(), svc: svc, controller: controller)
+    server.api = ControlAPI(store: CommandStore(), svc: svc, controller: controller,
+                             library: controller, cache: MetadataCache(), artwork: ArtworkService())
     svc.onTrackChange = { m in
         server.broadcast(Envelope.encodeMarker(m))    // 실제 곡 전환 → 스트림 MARKER (spec §6)
         print("MARKER seq=\(m.seq) cause=\(m.cause.rawValue) track=\(m.trackId)")

@@ -2,7 +2,7 @@ import XCTest
 import YoutumuKit
 @testable import MacAgentCore
 
-private final class FakeController: PlayerControlling {
+private final class FakeController: PlayerControlling, LibraryProviding {
     var calls: [String] = []
     var shouldThrow = false
     private func rec(_ s: String) throws { calls.append(s); if shouldThrow { throw CDPError.disconnected } }
@@ -11,6 +11,12 @@ private final class FakeController: PlayerControlling {
     func next() async throws { try rec("next") }
     func previous() async throws { try rec("previous") }
     func playTrack(videoId: String) async throws { try rec("track:\(videoId)") }
+    // 이 파일의 테스트는 library 라우트를 다루지 않는다 — ControlAPI init 시그니처 충족용 no-op (ControlAPILibraryTests.swift가 실동작 검증)
+    func listPlaylists() async throws -> [PlaylistInfo] { [] }
+    func playlistTracks(playlistId: String) async throws -> [TrackSummary] { [] }
+    func queueItems() async throws -> [QueueItem] { [] }
+    func jumpQueue(position: Int) async throws -> Bool { true }
+    func playPlaylist(playlistId: String) async throws {}
 }
 
 final class ControlAPITests: XCTestCase {
@@ -19,7 +25,8 @@ final class ControlAPITests: XCTestCase {
 
     override func setUp() {
         fake = FakeController()
-        api = ControlAPI(store: CommandStore(), svc: PlayerStateService(), controller: fake)
+        api = ControlAPI(store: CommandStore(), svc: PlayerStateService(), controller: fake,
+                         library: fake, cache: MetadataCache(), artwork: ArtworkService())
     }
 
     private func post(_ path: String, _ body: String) async -> ApiResponse {
