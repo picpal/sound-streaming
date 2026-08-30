@@ -28,7 +28,7 @@ public final class CDPClient: NSObject {
         receiveLoop(task)
     }
 
-    public func evaluate(_ js: String) async throws -> String? {
+    public func evaluate(_ js: String, awaitPromise: Bool = false) async throws -> String? {
         try await withCheckedThrowingContinuation { cont in
             lock.lock()
             guard let task = ws else {
@@ -39,7 +39,7 @@ public final class CDPClient: NSObject {
             let id = nextId; nextId += 1
             pending[id] = cont
             lock.unlock()
-            let payload = CDPCodec.evaluateRequest(id: id, expression: js)
+            let payload = CDPCodec.evaluateRequest(id: id, expression: js, awaitPromise: awaitPromise)
             task.send(.string(String(decoding: payload, as: UTF8.self))) { [weak self] err in
                 if let err { self?.fail(id: id, err) }
             }

@@ -27,4 +27,17 @@ final class CDPCodecTests: XCTestCase {
         let json = #"{"method":"Runtime.consoleAPICalled","params":{}}"#
         XCTAssertNil(CDPCodec.decodeResponse(Data(json.utf8)))
     }
+    func testEvaluateRequestAwaitPromise() throws {
+        let data = CDPCodec.evaluateRequest(id: 3, expression: "fetch('/x')", awaitPromise: true)
+        let obj = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
+        let params = try XCTUnwrap(obj["params"] as? [String: Any])
+        XCTAssertEqual(params["awaitPromise"] as? Bool, true)
+    }
+
+    func testEvaluateRequestDefaultsNoAwait() throws {
+        let data = CDPCodec.evaluateRequest(id: 4, expression: "1+1")
+        let obj = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
+        let params = try XCTUnwrap(obj["params"] as? [String: Any])
+        XCTAssertEqual(params["awaitPromise"] as? Bool, false)
+    }
 }

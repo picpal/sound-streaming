@@ -28,9 +28,9 @@ public final class BrowserController: PlayerControlling {
     public init(cdp: CDPClient) { self.cdp = cdp }
 
     /// 연결이 죽어 있으면 1회 재연결 후 재시도 (Chrome 재시작·탭 리로드 대응)
-    private func eval(_ js: String) async throws -> String? {
-        do { return try await cdp.evaluate(js) }
-        catch { try await cdp.connect(); return try await cdp.evaluate(js) }
+    private func eval(_ js: String, awaitPromise: Bool = false) async throws -> String? {
+        do { return try await cdp.evaluate(js, awaitPromise: awaitPromise) }
+        catch { try await cdp.connect(); return try await cdp.evaluate(js, awaitPromise: awaitPromise) }
     }
 
     public func play() async throws { _ = try await eval(YTM.play) }
