@@ -6,7 +6,9 @@ import NIOHTTP1
 
 final class StreamServerHandlerTests: XCTestCase {
     private func makeChannel(_ server: StreamServer) -> EmbeddedChannel {
-        EmbeddedChannel(handler: StreamServer.Handler(server: server))
+        let ch = EmbeddedChannel(handler: StreamServer.Handler(server: server))
+        try! ch.connect(to: .init(ipAddress: "127.0.0.1", port: 8080)).wait()
+        return ch
     }
     private func head(_ method: HTTPMethod, _ uri: String) -> HTTPServerRequestPart {
         .head(.init(version: .http1_1, method: method, uri: uri))
@@ -61,6 +63,7 @@ final class StreamServerHandlerTests: XCTestCase {
         ch1.embeddedEventLoop.run(); ch2.embeddedEventLoop.run()
         XCTAssertFalse(ch1.isActive)               // 단일 수신자 (spec §6) — 이전 연결 종료
         server.broadcast(Data([0x09]))
+        // readBodyData will pump the loop
         XCTAssertEqual(try readBodyData(ch2), Data([0x09]))
         XCTAssertNil(try? ch1.readOutbound(as: HTTPServerResponsePart.self) as Any?)
     }
