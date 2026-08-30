@@ -30,6 +30,8 @@
 - Mac 볼륨 0에서도 캡처 정상(무음 운영 모드)
 - G1 직후 유휴 구간에서 1회 "네트워크 연결 유실" 발생(수동 Play로 복구) — Phase 6 자동 재접속 필요성 실증
 - YT Music 장시간 재생 시 자동 일시정지 팝업으로 소리 중단 가능(스트림은 유지) — Phase 1 CDP 제어에서 처리 검토
+- (Phase 2 체크포인트 발견) **디스플레이 잠자기 중 serve 시작 불가**: SCShareableContent가 displays 0을 반환해 `cap.start()` 실패 → 같은 Task 뒤의 CDP 연결·상태 폴링까지 조용히 죽음(서버는 뜨지만 /api/player 동결, 오류 출력 없음). `caffeinate -u`로 화면 깨운 뒤 시작하면 정상. 이미 실행 중인 캡처는 화면이 꺼져도 유지됨(기존 운영과 일치). → Phase 3/6: cap.start() 실패를 폴링과 분리 + 재시도, 실패 로그 출력 필요
+- (Phase 2 체크포인트 발견·**해결**) in-page innertube fetch는 SAPISIDHASH Authorization 헤더가 없으면 로그아웃 취급 — 라이브러리 빈 응답, 지역에 따라 "Premium 전용" 거절. 페이지 쿠키 SAPISID로 헤더 계산해 해결(`bbb8ed9`)
 
 ## 잔여 측정 계획
 
