@@ -39,7 +39,15 @@ final class HLSPlayer: NSObject {
 
         let r = HLSLoopbackRelay(upstreamHost: host, session: session)
         relay = r
-        let port = try await r.start()
+        let port: UInt16
+        do {
+            port = try await r.start()
+        } catch {
+            // 릴레이 시작 실패 시 남겨두지 않고 확실히 정리한 뒤 던진다.
+            r.stop()
+            relay = nil
+            throw error
+        }
 
         let url = URL(string: "http://127.0.0.1:\(port)/\(r.token)/audio/hls/live.m3u8")!
         let asset = AVURLAsset(url: url)
@@ -115,16 +123,20 @@ private final class ContinuationResumeBox: @unchecked Sendable {
         self.continuation = continuation
     }
 
-    func resume(_ result: Result<UInt16, Error>) {
+    /// 반환값 true = 이 호출이 경쟁에서 승리해 실제로 continuation을 resume시켰다.
+    /// (ready와 3초 타임아웃이 동시에 도착할 수 있어, 진 쪽은 리스너를 취소하면 안 된다 — 호출부가 이 값으로 판단.)
+    @discardableResult
+    func resume(_ result: Result<UInt16, Error>) -> Bool {
         lock.lock()
         let already = resumed
         resumed = true
         lock.unlock()
-        guard !already else { return }
+        guard !already else { return false }
         switch result {
         case .success(let port): continuation.resume(returning: port)
         case .failure(let err): continuation.resume(throwing: err)
         }
+        return true
     }
 }
 
@@ -153,6 +165,19 @@ private final class HLSLoopbackRelay: @unchecked Sendable {
         return bytes.map { String(format: "%02x", $0) }.joined()
     }
 
+    /// 업스트림에 존재하는 리소스는 정확히 이 세 형태뿐이다: `live.m3u8`, `init.mp4`, `seg<digits>.m4s`.
+    /// 일치하면 (경로 탐색 없는) 정규화된 이름을 그대로 반환, 아니면 nil.
+    private static func allowlistedResourceName(_ rest: String) -> String? {
+        if rest == "live.m3u8" || rest == "init.mp4" { return rest }
+        if rest.hasPrefix("seg"), rest.hasSuffix(".m4s") {
+            let digits = rest.dropFirst("seg".count).dropLast(".m4s".count)
+            if !digits.isEmpty, digits.allSatisfy(\.isNumber) {
+                return rest
+            }
+        }
+        return nil
+    }
+
     /// 리스너를 127.0.0.1 임시 포트에 띄우고 준비될 때까지 대기 후 포트 번호를 반환한다.
     func start() async throws -> UInt16 {
         let params = NWParameters.tcp
@@ -165,30 +190,47 @@ private final class HLSLoopbackRelay: @unchecked Sendable {
 
         return try await withCheckedThrowingContinuation { (cont: CheckedContinuation<UInt16, Error>) in
             let box = ContinuationResumeBox(cont)
-            l.stateUpdateHandler = { state in
+            // [weak l] — l을 강하게 캡처하면 handler가 l을 붙잡고 l이 handler를 붙잡아
+            // 이 리스너가 절대 deinit되지 않는 순환 참조가 생긴다.
+            l.stateUpdateHandler = { [weak l] state in
                 switch state {
                 case .ready:
-                    if let port = l.port?.rawValue {
+                    if let port = l?.port?.rawValue {
                         box.resume(.success(port))
                     } else {
                         box.resume(.failure(URLError(.cannotConnectToHost)))
+                        l?.cancel()
+                        l?.stateUpdateHandler = nil
                     }
                 case .failed(let err):
                     box.resume(.failure(err))
+                    l?.cancel()
+                    l?.stateUpdateHandler = nil
+                case .cancelled:
+                    l?.stateUpdateHandler = nil
                 default:
                     break
                 }
             }
             l.start(queue: queue)
-            queue.asyncAfter(deadline: .now() + 3) {
-                box.resume(.failure(URLError(.timedOut)))
+            queue.asyncAfter(deadline: .now() + 3) { [weak l] in
+                // 타임아웃이 ready와 경쟁에서 이겼을 때만(즉 우리가 실제로 resume시켰을 때만)
+                // 리스너를 취소한다 — 진 경우엔 이미 정상적으로 떠 있는 리스너를 건드리면 안 된다.
+                if box.resume(.failure(URLError(.timedOut))) {
+                    l?.cancel()
+                    l?.stateUpdateHandler = nil
+                }
             }
         }
     }
 
     func stop() {
-        queue.async { [weak self] in
-            guard let self else { return }
+        // self를 강하게 캡처한다 — HLSPlayer.stop()이 relay 프로퍼티를 즉시 nil로 덮어써도
+        // (릴레이 인스턴스가 곧바로 deinit되어도) 이 정리 작업은 큐에서 끝까지 실행되어야
+        // listener.cancel()이 실제로 호출된다. weak self였다면 deinit 후 guard가 즉시 반환해
+        // 리스너가 영원히 살아남아 mTLS 업스트림으로 계속 포워딩하는 리크가 생긴다.
+        queue.async {
+            self.listener?.stateUpdateHandler = nil
             self.listener?.cancel()
             self.listener = nil
             for (_, c) in self.connections { c.cancel() }
@@ -246,7 +288,19 @@ private final class HLSLoopbackRelay: @unchecked Sendable {
             return
         }
         let rest = String(path.dropFirst(prefix.count))
-        guard let url = URL(string: "https://\(upstreamHost):8443/audio/hls/\(rest)") else {
+        // 방어적 차단 — 인코딩된 문자·쿼리·프래그먼트·상위 디렉터리 이동 시도는 화이트리스트
+        // 검사 이전에 거른다 (URLSession이 ".."를 그대로 업스트림에 전달하는 것을 확인함).
+        guard !rest.contains("%"), !rest.contains("?"), !rest.contains("#"), !rest.contains("..") else {
+            respond(conn, status: 404, contentType: nil, body: nil)
+            return
+        }
+        // 존재하는 리소스는 정확히 세 가지 형태뿐 — 화이트리스트로 매칭된 이름만 사용하고,
+        // 클라이언트가 보낸 원본 경로 문자열은 업스트림 URL 조립에 절대 쓰지 않는다.
+        guard let matchedName = Self.allowlistedResourceName(rest) else {
+            respond(conn, status: 404, contentType: nil, body: nil)
+            return
+        }
+        guard let url = URL(string: "https://\(upstreamHost):8443/audio/hls/\(matchedName)") else {
             respond(conn, status: 404, contentType: nil, body: nil)
             return
         }
