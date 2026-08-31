@@ -60,8 +60,12 @@ enum ApiClient {
         try await post(host: host, path: "/api/player/playlists/\(id)")
     }
 
-    static func playTrack(host: String, id: String) async throws -> CommandResponse {
-        try await post(host: host, path: "/api/player/tracks/\(id)")
+    /// listId가 있으면 그 곡부터 재생목록 순서로 큐가 이어진다 (§17 문맥 재생); 없으면 곡 기반 라디오 큐.
+    static func playTrack(host: String, id: String, listId: String? = nil) async throws -> CommandResponse {
+        if let listId {
+            return try await post(host: host, path: "/api/player/playlists/\(listId)/tracks/\(id)")
+        }
+        return try await post(host: host, path: "/api/player/tracks/\(id)")
     }
 
     static func jumpQueue(host: String, position: Int, stateVersion: UInt64) async throws -> CommandResponse {

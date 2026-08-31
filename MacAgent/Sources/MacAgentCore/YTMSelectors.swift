@@ -35,9 +35,13 @@ enum YTM {
     static let next = "document.querySelector('ytmusic-player-bar .next-button')?.click()"
     static let previous = "document.querySelector('ytmusic-player-bar .previous-button')?.click()"
 
-    /// videoId는 호출 전에 ^[A-Za-z0-9_-]{1,64}$ 검증 필수 — JS 인젝션 표면 차단 (spec §11)
-    static func playTrack(videoId: String) -> String {
-        "location.href = 'https://music.youtube.com/watch?v=\(videoId)'"
+    /// videoId·playlistId는 호출 전에 ^[A-Za-z0-9_-]{1,64}$ 검증 필수 — JS 인젝션 표면 차단 (spec §11)
+    /// playlistId가 있으면 그 곡부터 재생목록 순서로 큐가 이어진다 (&list= 문맥); 없으면 곡 기반 라디오 큐.
+    static func playTrack(videoId: String, playlistId: String? = nil) -> String {
+        if let pid = playlistId {
+            return "location.href = 'https://music.youtube.com/watch?v=\(videoId)&list=\(pid)'"
+        }
+        return "location.href = 'https://music.youtube.com/watch?v=\(videoId)'"
     }
 
     /// "계속 시청하시겠어요?" 자동 일시정지 팝업 해제 — 눌렀으면 "true" 반환 (poc-results 백로그)

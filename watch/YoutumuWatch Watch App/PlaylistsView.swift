@@ -8,16 +8,38 @@ struct PlaylistsView: View {
     @State private var playlists: [PlaylistSummary]?
     @State private var loadFailed = false
 
+    /// YouTube Charts 공식 자동 갱신 "한국 인기곡 Top100" — 항상 최상단 고정 행에서 재생
+    private static let kpopChartId = "PL4fGSI1pDJn6jXS_Tv_N9B8Z0HTRVJE0m"
+
     var body: some View {
         Group {
             if let playlists {
-                List(playlists, id: \.playlistId) { p in
-                    NavigationLink(value: p) {
+                List {
+                    Button {
+                        model.playPlaylist(id: Self.kpopChartId)
+                        onPlay()
+                    } label: {
                         HStack(spacing: 8) {
-                            ArtworkView(id: p.playlistId, size: 36)
+                            Image(systemName: "flame.fill")
+                                .foregroundStyle(.white)
+                                .frame(width: 36, height: 36)
+                                .background(LinearGradient(colors: [.red, .orange],
+                                                           startPoint: .top, endPoint: .bottom),
+                                            in: RoundedRectangle(cornerRadius: 8))
                             VStack(alignment: .leading) {
-                                Text(p.title).font(.body).lineLimit(1)
-                                Text("\(p.trackCount)곡").font(.footnote).foregroundStyle(.secondary)
+                                Text("KPOP 트렌드").font(.body).lineLimit(1)
+                                Text("인기곡 Top100").font(.footnote).foregroundStyle(.secondary)
+                            }
+                        }
+                    }
+                    ForEach(playlists, id: \.playlistId) { p in
+                        NavigationLink(value: p) {
+                            HStack(spacing: 8) {
+                                ArtworkView(id: p.playlistId, size: 36)
+                                VStack(alignment: .leading) {
+                                    Text(p.title).font(.body).lineLimit(1)
+                                    Text("\(p.trackCount)곡").font(.footnote).foregroundStyle(.secondary)
+                                }
                             }
                         }
                     }

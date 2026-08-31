@@ -10,7 +10,9 @@ private final class FakeController: PlayerControlling, LibraryProviding {
     func pause() async throws { try rec("pause") }
     func next() async throws { try rec("next") }
     func previous() async throws { try rec("previous") }
-    func playTrack(videoId: String) async throws { try rec("track:\(videoId)") }
+    func playTrack(videoId: String, playlistId: String?) async throws {
+        try rec("track:\(videoId)" + (playlistId.map { "@\($0)" } ?? ""))
+    }
     // 이 파일의 테스트는 library 라우트를 다루지 않는다 — ControlAPI init 시그니처 충족용 no-op (ControlAPILibraryTests.swift가 실동작 검증)
     func listPlaylists() async throws -> [PlaylistInfo] { [] }
     func playlistTracks(playlistId: String) async throws -> [TrackSummary] { [] }
@@ -80,6 +82,20 @@ final class ControlAPITests: XCTestCase {
         let r = await post("/api/player/tracks/dQw4w9WgXcQ", okBody)
         XCTAssertEqual(r.status, 200)
         XCTAssertEqual(fake.calls, ["track:dQw4w9WgXcQ"])
+    }
+
+    func testTrackInPlaylistContextExecutes() async {
+        let r = await post("/api/player/playlists/PLabc-123/tracks/dQw4w9WgXcQ", okBody)
+        XCTAssertEqual(r.status, 200)
+        XCTAssertEqual(fake.calls, ["track:dQw4w9WgXcQ@PLabc-123"])
+    }
+
+    func testTrackInPlaylistInvalidIdsRejected400() async {
+        let r1 = await post("/api/player/playlists/bad%2Fid/tracks/dQw4w9WgXcQ", okBody)
+        XCTAssertEqual(r1.status, 400)
+        let r2 = await post("/api/player/playlists/PLabc/tracks/bad!id", okBody)
+        XCTAssertEqual(r2.status, 400)
+        XCTAssertTrue(fake.calls.isEmpty)
     }
 
     func testInvalidTrackIdRejected400() async {

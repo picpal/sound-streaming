@@ -147,11 +147,11 @@ final class PlayerModel: ObservableObject {
         return items.indices.contains(idx) ? items[idx] : nil
     }
 
-    func playTrack(id: String, title: String, artist: String) {
+    func playTrack(id: String, title: String, artist: String, playlistId: String? = nil) {
         applyOverlay(playback: .playing, title: title, artist: artist)
         ensureStream()
         Task {
-            do { _ = try await ApiClient.playTrack(host: host, id: id) }
+            do { _ = try await ApiClient.playTrack(host: host, id: id, listId: playlistId) }
             catch { overlay = nil; applyReconcile(); banner = "재생 실패" }
         }
     }

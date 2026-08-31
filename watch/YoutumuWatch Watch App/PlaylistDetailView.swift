@@ -23,7 +23,9 @@ struct PlaylistDetailView: View {
                     ForEach(Array(page.items.enumerated()), id: \.offset) { i, t in
                         Button {
                             guard !t.unavailable, !t.trackId.isEmpty else { return }
-                            model.playTrack(id: t.trackId, title: t.title, artist: t.artist)   // §21 즉시 전환
+                            // §21 즉시 전환 + 재생목록 문맥 유지 (이후 큐 = 재생목록 순서)
+                            model.playTrack(id: t.trackId, title: t.title, artist: t.artist,
+                                            playlistId: playlist.playlistId)
                             onPlay()
                         } label: {
                             HStack(alignment: .top, spacing: 6) {

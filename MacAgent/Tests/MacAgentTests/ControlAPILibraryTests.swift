@@ -36,7 +36,7 @@ private final class NoopController: PlayerControlling {
     func pause() async throws {}
     func next() async throws {}
     func previous() async throws {}
-    func playTrack(videoId: String) async throws {}
+    func playTrack(videoId: String, playlistId: String?) async throws {}
 }
 
 final class ControlAPILibraryTests: XCTestCase {

@@ -21,7 +21,7 @@ public protocol PlayerControlling {
     func pause() async throws
     func next() async throws
     func previous() async throws
-    func playTrack(videoId: String) async throws
+    func playTrack(videoId: String, playlistId: String?) async throws
 }
 
 public final class BrowserController: PlayerControlling, LibraryProviding {
@@ -38,7 +38,9 @@ public final class BrowserController: PlayerControlling, LibraryProviding {
     public func pause() async throws { _ = try await eval(YTM.pause) }
     public func next() async throws { _ = try await eval(YTM.next) }
     public func previous() async throws { _ = try await eval(YTM.previous) }
-    public func playTrack(videoId: String) async throws { _ = try await eval(YTM.playTrack(videoId: videoId)) }
+    public func playTrack(videoId: String, playlistId: String?) async throws {
+        _ = try await eval(YTM.playTrack(videoId: videoId, playlistId: playlistId))
+    }
 
     public func snapshot() async throws -> YTMSnapshot {
         guard let json = try await eval(YTM.snapshot),

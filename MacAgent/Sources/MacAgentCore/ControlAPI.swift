@@ -54,7 +54,17 @@ public final class ControlAPI {
             guard trackId.wholeMatch(of: Self.idPattern) != nil else {
                 return .error(400, "invalid trackId")
             }
-            return await command(req) { try await self.controller.playTrack(videoId: trackId) }
+            return await command(req) { try await self.controller.playTrack(videoId: trackId, playlistId: nil) }
+
+        // 재생목록 문맥 재생: 그 곡부터 시작해 큐가 재생목록 순서로 이어진다 (§17 UX)
+        case ("POST", let p) where p.hasPrefix("/api/player/playlists/") && p.contains("/tracks/"):
+            let rest = String(p.dropFirst("/api/player/playlists/".count))
+            let comps = rest.components(separatedBy: "/tracks/")
+            guard comps.count == 2, comps[0].wholeMatch(of: Self.idPattern) != nil else {
+                return .error(400, "invalid playlistId")
+            }
+            guard comps[1].wholeMatch(of: Self.idPattern) != nil else { return .error(400, "invalid trackId") }
+            return await command(req) { try await self.controller.playTrack(videoId: comps[1], playlistId: comps[0]) }
 
         case ("GET", "/api/playlists"):
             do {
@@ -119,6 +129,7 @@ public final class ControlAPI {
             return ApiResponse(status: 200, body: try! JSONEncoder().encode(dup))   // 재실행 없음 (spec §5)
         }
         do { try await exec() } catch {
+            print("command failed: \(error)")              // 진단용 — 오류 종류가 Terminal에 남는다
             return .error(502, "browser control failed")   // 실행 여부 불명 — 캐시하지 않음
         }
         svc.noteCommand()
