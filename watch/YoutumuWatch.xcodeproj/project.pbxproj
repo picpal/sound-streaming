@@ -19,8 +19,10 @@
 		4056FD9B64689986D645AE94 /* YoutumuKit in Frameworks */ = {isa = PBXBuildFile; productRef = 40CE66C9C71E9F2485D41145 /* YoutumuKit */; };
 		54FDF0E35CD6BFF41BF67B18 /* StreamPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E58D6E1F6FDD5FC324E92B1 /* StreamPlayer.swift */; };
 		560C0FBF2C762291A3BE7DB1 /* PlaylistsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CF91F45610B443B54194C66 /* PlaylistsView.swift */; };
+		5C3CBF71598090985515965D /* HLSPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 051D119A82682F9635220932 /* HLSPlayer.swift */; };
 		62FEF8FD55C931976BA17F4C /* QueueView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53CC31B06339A81DBA08D7D9 /* QueueView.swift */; };
 		6542F8417018D18A398A8214 /* AACDecoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBA3B404B8BCE24A5133564C /* AACDecoder.swift */; };
+		74F5B91CDAB1ABB792019150 /* HLSPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 051D119A82682F9635220932 /* HLSPlayer.swift */; };
 		7CFE63E65A16C50912A5DE79 /* KeyStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 311CE6E83B62E0D0DBDFA28F /* KeyStore.swift */; };
 		8800E7C518A14F4C44858DAE /* PlaylistsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CF91F45610B443B54194C66 /* PlaylistsView.swift */; };
 		8FF48612F8E1237584021762 /* ApiClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3F0738084870BEB2376DE8E4 /* ApiClient.swift */; };
@@ -42,6 +44,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		051D119A82682F9635220932 /* HLSPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HLSPlayer.swift; sourceTree = "<group>"; };
 		1DE2BC8616264E7EE3CF7766 /* PlaylistDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaylistDetailView.swift; sourceTree = "<group>"; };
 		2F61FF65B9F16DE7F3DB3FEB /* NowPlayingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NowPlayingView.swift; sourceTree = "<group>"; };
 		311CE6E83B62E0D0DBDFA28F /* KeyStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyStore.swift; sourceTree = "<group>"; };
@@ -108,6 +111,7 @@
 				8D9A4FB3E502FE9A7D81C8A9 /* ContentView.swift */,
 				D6525C2EB6E1E93255ECECAB /* EnrollClient.swift */,
 				48952F019EB45ACE8E933745 /* EnrollView.swift */,
+				051D119A82682F9635220932 /* HLSPlayer.swift */,
 				311CE6E83B62E0D0DBDFA28F /* KeyStore.swift */,
 				2F61FF65B9F16DE7F3DB3FEB /* NowPlayingView.swift */,
 				49FD76A30DD52CE48AC9AF78 /* PlayerModel.swift */,
@@ -254,6 +258,7 @@
 				2114862B16951E991B9763C7 /* ContentView.swift in Sources */,
 				160B2F0C02E6866590C5025F /* EnrollClient.swift in Sources */,
 				1E18AD5CFB9DC86DF6F13C88 /* EnrollView.swift in Sources */,
+				5C3CBF71598090985515965D /* HLSPlayer.swift in Sources */,
 				1A4C049D463A0131A78D5640 /* KeyStore.swift in Sources */,
 				904F20EC5221E925114D265B /* NowPlayingView.swift in Sources */,
 				D3D19D5263CB359EC0C862D7 /* PlayerModel.swift in Sources */,
@@ -275,6 +280,7 @@
 				AB3D10FBC214341D6F9B2231 /* ContentView.swift in Sources */,
 				FCB5F11E379BA24B465CB98A /* EnrollClient.swift in Sources */,
 				D43AEBB94CB78AB395FA60E6 /* EnrollView.swift in Sources */,
+				74F5B91CDAB1ABB792019150 /* HLSPlayer.swift in Sources */,
 				7CFE63E65A16C50912A5DE79 /* KeyStore.swift in Sources */,
 				1E24F1B21D4B159BED84E287 /* NowPlayingView.swift in Sources */,
 				345A438841DA0617E4438516 /* PlayerModel.swift in Sources */,
