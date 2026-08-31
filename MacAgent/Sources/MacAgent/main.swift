@@ -47,13 +47,22 @@ case "record-aac":
 case "serve":
     let server = StreamServer(port: 8080)
     let cap = ChromeAudioCapture()
+    let watchdog = CaptureWatchdog()
     var enc: AACEncoder?
     cap.onPCM = { pcm in
+        watchdog.notePCM()
         if enc == nil { enc = AACEncoder(inputFormat: pcm.format) }
         for frame in enc?.encode(pcm) ?? [] {
             server.broadcast(Envelope.encode(type: .audio, payload: frame))
         }
     }
+    // SCStream 무증상 사망 자동 복구 — 수신자가 듣고 있는데 PCM이 끊기면 재시작
+    watchdog.start(hasReceiver: { server.hasReceiver() },
+                   restart: {
+                       BrowserRecovery.wakeDisplay()
+                       await cap.stop()
+                       do { try await cap.start() } catch { print("CaptureWatchdog: 재시작 실패 \(error)") }
+                   })
     let cdp = CDPClient()
     let controller = BrowserController(cdp: cdp)
     let svc = PlayerStateService()

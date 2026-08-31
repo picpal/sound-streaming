@@ -10,13 +10,11 @@ struct NowPlayingView: View {
         VStack(spacing: 6) {
             ArtworkView(id: model.serverState?.trackId ?? "", size: 70)
 
-            Text(model.display.title.isEmpty ? "—" : model.display.title)
-                .font(.headline).lineLimit(1)
-            Text(model.display.artist)
-                .font(.footnote).foregroundStyle(.secondary).lineLimit(1)
-
-            if model.stream == .connecting {
-                Text("Connecting…").font(.footnote).foregroundStyle(.secondary)   // §20
+            VStack(spacing: 1) {                                                  // 제목·가수 밀착 — 컨트롤을 위로
+                Text(model.display.title.isEmpty ? "—" : model.display.title)
+                    .font(.headline).lineLimit(1)
+                Text(model.display.artist)
+                    .font(.footnote).foregroundStyle(.secondary).lineLimit(1)
             }
 
             HStack(spacing: 14) {
@@ -29,6 +27,12 @@ struct NowPlayingView: View {
                 .buttonStyle(.plain)
                 Button { model.next() } label: { Image(systemName: "forward.fill") }
                     .buttonStyle(.plain)
+            }
+        }
+        .blur(radius: model.stream == .connecting ? 5 : 0)                        // §20 — 텍스트 대신 블러+스피너 (레이아웃 불변)
+        .overlay {
+            if model.stream == .connecting {
+                ProgressView().tint(.white).scaleEffect(1.4)
             }
         }
         .navigationBarTitleDisplayMode(.inline)

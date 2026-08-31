@@ -22,6 +22,12 @@ public final class StreamServer {
         }
     }
 
+    /// 캡처 워치독용 — 살아있는 수신자가 있을 때만 자동 재시작을 허용
+    public func hasReceiver() -> Bool {
+        lock.lock(); defer { lock.unlock() }
+        return receiver?.isActive ?? false
+    }
+
     private func setReceiver(_ ch: Channel) {
         lock.lock()
         receiver?.close(promise: nil)       // 이전 연결 종료
