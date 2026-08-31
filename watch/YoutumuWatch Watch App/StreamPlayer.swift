@@ -19,6 +19,7 @@ final class StreamPlayer: NSObject, URLSessionDataDelegate {
     var onMarker: ((Marker) -> Void)?
     var onEnded: ((String) -> Void)?
     var onRemoteCommand: ((RemoteCommand) -> Void)?
+    var onStreaming: (() -> Void)?    // 첫 오디오 프레임 재생 시작 — 실제 연결 성립 신호
     /// Crown 볼륨 (§18·§22 — Watch 로컬 출력, 서버 상태 아님)
     var volume: Float {
         get { engine.mainMixerNode.outputVolume }
@@ -104,6 +105,7 @@ final class StreamPlayer: NSObject, URLSessionDataDelegate {
         bufferedFrames += pcm.frameLength
         if !started && bufferedFrames >= preBufferFrames {       // 1초 pre-buffer 후 재생
             node.play(); started = true
+            onStreaming?()
         }
     }
 

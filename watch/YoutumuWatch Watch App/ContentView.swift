@@ -37,7 +37,7 @@ struct ContentView: View {
                 if let msg = model.banner {
                     Text(msg).font(.footnote).padding(6)
                         .background(.red.opacity(0.8), in: Capsule())
-                        .task { try? await Task.sleep(for: .seconds(2)); model.banner = nil }
+                        .task(id: msg) { try? await Task.sleep(for: .seconds(2)); model.banner = nil }
                 }
             }
             .overlay {

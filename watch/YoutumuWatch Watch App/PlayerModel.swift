@@ -21,8 +21,15 @@ final class PlayerModel: ObservableObject {
     private var pollTask: Task<Void, Never>?
 
     init() {
+        player.onStreaming = { [weak self] in
+            Task { @MainActor in self?.stream = .streaming }
+        }
         player.onEnded = { [weak self] _ in
-            Task { @MainActor in self?.stream = .disconnected }
+            Task { @MainActor in
+                guard let self else { return }
+                if self.stream == .streaming || self.stream == .connecting { self.banner = "오디오 연결 끊김" }
+                self.stream = .disconnected
+            }
         }
         player.onRemoteCommand = { [weak self] cmd in     // AirPods 스템/시스템 컨트롤 위임 (Phase 1)
             Task { @MainActor in
@@ -86,7 +93,7 @@ final class PlayerModel: ObservableObject {
         Task {
             do {
                 try await player.start(url: URL(string: "https://\(host):8443/audio/live")!)
-                stream = .streaming
+                // .streaming 전환은 onStreaming 콜백(첫 오디오 프레임)이 담당 — start() 반환은 TLS 연결 성립 이전
             } catch {
                 stream = .disconnected
                 banner = "오디오 연결 실패"
