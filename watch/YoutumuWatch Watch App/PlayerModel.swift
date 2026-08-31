@@ -16,7 +16,7 @@ final class PlayerModel: ObservableObject {
     @Published var banner: String?
 
     let host = "youtumu.duckdns.org"     // NAT loopback 확인 → 내외부 단일 주소 (Phase 3 확정)
-    let player = StreamPlayer()
+    nonisolated(unsafe) let player = HLSPlayer()
 
     private var overlay: OptimisticOverlay?
     private var consecutiveFailures = 0
@@ -110,7 +110,7 @@ final class PlayerModel: ObservableObject {
         stream = .connecting
         Task {
             do {
-                try await player.start(url: URL(string: "https://\(host):8443/audio/live")!)
+                try await player.start(host: host)
                 // .streaming 전환은 onStreaming 콜백(첫 오디오 프레임)이 담당 — start() 반환은 TLS 연결 성립 이전
             } catch {
                 stream = .disconnected
@@ -140,6 +140,14 @@ final class PlayerModel: ObservableObject {
         }
     }
 
+    /// 트랙 전환 명령 성공 후: 새 곡 오디오가 세그먼트로 나올 시간을 준 뒤 라이브 엣지로 점프
+    private func nudgeToLiveEdgeSoon() {
+        Task {
+            try? await Task.sleep(for: .seconds(2))
+            player.seekToLiveEdge()
+        }
+    }
+
     func togglePlayPause() {
         let playing = display.playback == .playing
         applyOverlay(playback: playing ? .paused : .playing, title: nil, artist: nil)
@@ -152,6 +160,7 @@ final class PlayerModel: ObservableObject {
         applyOverlay(playback: .playing, title: meta?.title, artist: meta?.artist,
                      trackId: meta?.trackId)
         send("/api/player/next")
+        nudgeToLiveEdgeSoon()
     }
 
     func previous() {
@@ -159,6 +168,7 @@ final class PlayerModel: ObservableObject {
         applyOverlay(playback: .playing, title: meta?.title, artist: meta?.artist,
                      trackId: meta?.trackId)
         send("/api/player/previous")
+        nudgeToLiveEdgeSoon()
     }
 
     /// §21 Next: queue에서 인접 곡 메타를 즉시 표시
@@ -173,7 +183,10 @@ final class PlayerModel: ObservableObject {
         applyOverlay(playback: .playing, title: title, artist: artist, trackId: id)
         ensureStream()
         Task {
-            do { _ = try await ApiClient.playTrack(host: host, id: id, listId: playlistId) }
+            do {
+                _ = try await ApiClient.playTrack(host: host, id: id, listId: playlistId)
+                nudgeToLiveEdgeSoon()
+            }
             catch { overlay = nil; applyReconcile(); banner = "재생 실패" }
         }
     }
@@ -182,7 +195,10 @@ final class PlayerModel: ObservableObject {
         applyOverlay(playback: .playing, title: nil, artist: nil)
         ensureStream()
         Task {
-            do { _ = try await ApiClient.playPlaylist(host: host, id: id) }
+            do {
+                _ = try await ApiClient.playPlaylist(host: host, id: id)
+                nudgeToLiveEdgeSoon()
+            }
             catch { overlay = nil; applyReconcile(); banner = "재생 실패" }
         }
     }
@@ -198,7 +214,10 @@ final class PlayerModel: ObservableObject {
         if let item = queue?.items.first(where: { $0.position == position }) {
             applyOverlay(playback: .playing, title: item.title, artist: item.artist)
         }
-        do { _ = try await ApiClient.jumpQueue(host: host, position: position, stateVersion: sv) }
+        do {
+            _ = try await ApiClient.jumpQueue(host: host, position: position, stateVersion: sv)
+            nudgeToLiveEdgeSoon()
+        }
         catch let e as ApiError where e.status == 409 {
             overlay = nil; applyReconcile()
             banner = "큐가 바뀌었어요"
