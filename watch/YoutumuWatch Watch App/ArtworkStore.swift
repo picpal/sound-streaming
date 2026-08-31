@@ -42,7 +42,8 @@ struct ArtworkView: View {
         .frame(width: size, height: size)
         .clipShape(RoundedRectangle(cornerRadius: size * 0.15))
         .task(id: id) {
-            guard !id.isEmpty else { image = nil; return }
+            image = nil
+            guard !id.isEmpty else { return }
             image = await ArtworkStore.shared.image(id: id, host: model.host)
         }
     }
