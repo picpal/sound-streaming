@@ -22,10 +22,14 @@ public final class HLSSegmenter: NSObject, AVAssetWriterDelegate {
         lock.unlock()
         if needsWriter { startWriter(firstSample: sb) }
 
+        // readiness 체크와 append를 lock을 쥔 채로 한 번에 끝낸다. stop()도 input을 nil로 만드는 것과
+        // markAsFinished 호출을 같은 lock으로 분리해두었으므로(reset은 lock 안, markAsFinished는 lock 밖),
+        // 여기서 lock을 놓지 않으면 markAsFinished가 진행 중인 append와 절대 겹칠 수 없다 — 겹치면 크래시.
+        // delegate의 didOutputSegmentData는 writer 내부 큐에서 비동기로 전달되므로 여기서 lock을 쥐고 있어도
+        // 같은 스레드에서 재진입하며 데드락이 나는 경로는 없다.
         lock.lock()
-        let inp = input
-        lock.unlock()
-        guard let inp, inp.isReadyForMoreMediaData else { return }   // 실시간 인코딩이 밀리면 드랍 (라이브)
+        defer { lock.unlock() }
+        guard let inp = input, inp.isReadyForMoreMediaData else { return }   // 실시간 인코딩이 밀리면 드랍 (라이브)
         inp.append(sb)
     }
 
