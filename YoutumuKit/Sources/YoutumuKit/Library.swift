@@ -2,7 +2,7 @@ import Foundation
 
 // Phase 2 wire 모델 (spec §5·§9·§19). Watch(Phase 5)와 공유하므로 YoutumuKit에 둔다.
 
-public struct PlaylistSummary: Codable, Equatable {
+public struct PlaylistSummary: Codable, Equatable, Hashable {
     public let playlistId: String
     public let title: String
     public let trackCount: Int
