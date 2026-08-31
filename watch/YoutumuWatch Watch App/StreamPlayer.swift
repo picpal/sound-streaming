@@ -19,6 +19,13 @@ final class StreamPlayer: NSObject, URLSessionDataDelegate {
     var onMarker: ((Marker) -> Void)?
     var onEnded: ((String) -> Void)?
     var onRemoteCommand: ((RemoteCommand) -> Void)?
+    /// Crown 볼륨 (§18·§22 — Watch 로컬 출력, 서버 상태 아님)
+    var volume: Float {
+        get { engine.mainMixerNode.outputVolume }
+        set { engine.mainMixerNode.outputVolume = max(0, min(1, newValue)) }
+    }
+    /// 스트림 연결 시도 이후 stop 전이면 true — `task`는 stop()·연결 종료 시 nil로 정리된다 (§22 AudioStreamState 참고용)
+    var isConnected: Bool { task != nil }
     private var remoteCommandsRegistered = false
     private(set) var bytesReceived: Int = 0
     private(set) var startedAt: Date?
@@ -82,7 +89,7 @@ final class StreamPlayer: NSObject, URLSessionDataDelegate {
         MPNowPlayingInfoCenter.default().nowPlayingInfo = info
     }
 
-    func stop() { task?.cancel(); node.stop(); engine.stop() }
+    func stop() { task?.cancel(); task = nil; node.stop(); engine.stop() }
 
     private func handleAudio(_ adtsFrame: Data) {
         guard let pcm = decoder.decode(adtsFrame: adtsFrame) else { return }
@@ -112,6 +119,7 @@ final class StreamPlayer: NSObject, URLSessionDataDelegate {
     }
     func urlSession(_ s: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
         guard task === self.task else { return }                 // 이전 연결의 뒤늦은 종료가 현재 스트림 상태를 깨지 않게
+        self.task = nil                                          // 연결 종료 → isConnected false
         // PoC: 재접속은 수동 (Play 버튼 재탭 = live edge 복귀). 자동 재접속은 Phase 6
         parser.reset(); flush()
         if let e = error as NSError?, e.code == NSURLErrorCancelled { return }   // Stop 버튼에 의한 정상 취소

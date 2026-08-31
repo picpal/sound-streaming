@@ -12,6 +12,7 @@
 		1A4C049D463A0131A78D5640 /* KeyStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 311CE6E83B62E0D0DBDFA28F /* KeyStore.swift */; };
 		2114862B16951E991B9763C7 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D9A4FB3E502FE9A7D81C8A9 /* ContentView.swift */; };
 		245A6FE3D09803C76B6CF61E /* ca.crt in Resources */ = {isa = PBXBuildFile; fileRef = B771CB76889EEC0FDD307FD0 /* ca.crt */; };
+		345A438841DA0617E4438516 /* PlayerModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49FD76A30DD52CE48AC9AF78 /* PlayerModel.swift */; };
 		4056FD9B64689986D645AE94 /* YoutumuKit in Frameworks */ = {isa = PBXBuildFile; productRef = 40CE66C9C71E9F2485D41145 /* YoutumuKit */; };
 		54FDF0E35CD6BFF41BF67B18 /* StreamPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E58D6E1F6FDD5FC324E92B1 /* StreamPlayer.swift */; };
 		6542F8417018D18A398A8214 /* AACDecoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBA3B404B8BCE24A5133564C /* AACDecoder.swift */; };
@@ -22,6 +23,7 @@
 		B50E5D2A54381ACD05BF7EF2 /* YoutumuWatchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 688EFA7E6A98DA52DAD0734C /* YoutumuWatchApp.swift */; };
 		BE7E773A95225C5B6668BB15 /* StreamPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E58D6E1F6FDD5FC324E92B1 /* StreamPlayer.swift */; };
 		CC223E94D233F62A089EE8B5 /* YoutumuWatchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 688EFA7E6A98DA52DAD0734C /* YoutumuWatchApp.swift */; };
+		D3D19D5263CB359EC0C862D7 /* PlayerModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49FD76A30DD52CE48AC9AF78 /* PlayerModel.swift */; };
 		DAFB10973801E7C4CB852D5F /* AACDecoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBA3B404B8BCE24A5133564C /* AACDecoder.swift */; };
 		FBBF095ADFB1BF10B5661E0B /* YoutumuKit in Frameworks */ = {isa = PBXBuildFile; productRef = 8CA39B538294AE37CD0C91CF /* YoutumuKit */; };
 		FCB5F11E379BA24B465CB98A /* EnrollClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6525C2EB6E1E93255ECECAB /* EnrollClient.swift */; };
@@ -31,6 +33,7 @@
 		311CE6E83B62E0D0DBDFA28F /* KeyStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyStore.swift; sourceTree = "<group>"; };
 		3F0738084870BEB2376DE8E4 /* ApiClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApiClient.swift; sourceTree = "<group>"; };
 		41145EF638C5B55F67346638 /* YoutumuWatch Watch App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "YoutumuWatch Watch App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		49FD76A30DD52CE48AC9AF78 /* PlayerModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerModel.swift; sourceTree = "<group>"; };
 		4B046DF80D38BB9E4401EEF6 /* YoutumuKit */ = {isa = PBXFileReference; lastKnownFileType = folder; name = YoutumuKit; path = ../YoutumuKit; sourceTree = SOURCE_ROOT; };
 		688EFA7E6A98DA52DAD0734C /* YoutumuWatchApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YoutumuWatchApp.swift; sourceTree = "<group>"; };
 		8D9A4FB3E502FE9A7D81C8A9 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -86,6 +89,7 @@
 				8D9A4FB3E502FE9A7D81C8A9 /* ContentView.swift */,
 				D6525C2EB6E1E93255ECECAB /* EnrollClient.swift */,
 				311CE6E83B62E0D0DBDFA28F /* KeyStore.swift */,
+				49FD76A30DD52CE48AC9AF78 /* PlayerModel.swift */,
 				8E58D6E1F6FDD5FC324E92B1 /* StreamPlayer.swift */,
 				688EFA7E6A98DA52DAD0734C /* YoutumuWatchApp.swift */,
 			);
@@ -225,6 +229,7 @@
 				2114862B16951E991B9763C7 /* ContentView.swift in Sources */,
 				160B2F0C02E6866590C5025F /* EnrollClient.swift in Sources */,
 				1A4C049D463A0131A78D5640 /* KeyStore.swift in Sources */,
+				D3D19D5263CB359EC0C862D7 /* PlayerModel.swift in Sources */,
 				BE7E773A95225C5B6668BB15 /* StreamPlayer.swift in Sources */,
 				CC223E94D233F62A089EE8B5 /* YoutumuWatchApp.swift in Sources */,
 			);
@@ -239,6 +244,7 @@
 				AB3D10FBC214341D6F9B2231 /* ContentView.swift in Sources */,
 				FCB5F11E379BA24B465CB98A /* EnrollClient.swift in Sources */,
 				7CFE63E65A16C50912A5DE79 /* KeyStore.swift in Sources */,
+				345A438841DA0617E4438516 /* PlayerModel.swift in Sources */,
 				54FDF0E35CD6BFF41BF67B18 /* StreamPlayer.swift in Sources */,
 				B50E5D2A54381ACD05BF7EF2 /* YoutumuWatchApp.swift in Sources */,
 			);
