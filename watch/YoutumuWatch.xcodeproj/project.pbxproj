@@ -18,6 +18,7 @@
 		4056FD9B64689986D645AE94 /* YoutumuKit in Frameworks */ = {isa = PBXBuildFile; productRef = 40CE66C9C71E9F2485D41145 /* YoutumuKit */; };
 		54FDF0E35CD6BFF41BF67B18 /* StreamPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E58D6E1F6FDD5FC324E92B1 /* StreamPlayer.swift */; };
 		560C0FBF2C762291A3BE7DB1 /* PlaylistsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CF91F45610B443B54194C66 /* PlaylistsView.swift */; };
+		62FEF8FD55C931976BA17F4C /* QueueView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53CC31B06339A81DBA08D7D9 /* QueueView.swift */; };
 		6542F8417018D18A398A8214 /* AACDecoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBA3B404B8BCE24A5133564C /* AACDecoder.swift */; };
 		7CFE63E65A16C50912A5DE79 /* KeyStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 311CE6E83B62E0D0DBDFA28F /* KeyStore.swift */; };
 		8800E7C518A14F4C44858DAE /* PlaylistsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CF91F45610B443B54194C66 /* PlaylistsView.swift */; };
@@ -29,6 +30,7 @@
 		BE7E773A95225C5B6668BB15 /* StreamPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E58D6E1F6FDD5FC324E92B1 /* StreamPlayer.swift */; };
 		CC223E94D233F62A089EE8B5 /* YoutumuWatchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 688EFA7E6A98DA52DAD0734C /* YoutumuWatchApp.swift */; };
 		D3D19D5263CB359EC0C862D7 /* PlayerModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49FD76A30DD52CE48AC9AF78 /* PlayerModel.swift */; };
+		D5B309F1868B3C2EB1FA8C63 /* QueueView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53CC31B06339A81DBA08D7D9 /* QueueView.swift */; };
 		DAFB10973801E7C4CB852D5F /* AACDecoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBA3B404B8BCE24A5133564C /* AACDecoder.swift */; };
 		E352EE7D4047BA6C7B41F7B6 /* ArtworkStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DF54E07E6F7BAA68A82355C /* ArtworkStore.swift */; };
 		EC480D259E47A360F65183C0 /* ArtworkStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DF54E07E6F7BAA68A82355C /* ArtworkStore.swift */; };
@@ -45,6 +47,7 @@
 		41145EF638C5B55F67346638 /* YoutumuWatch Watch App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "YoutumuWatch Watch App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		49FD76A30DD52CE48AC9AF78 /* PlayerModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerModel.swift; sourceTree = "<group>"; };
 		4B046DF80D38BB9E4401EEF6 /* YoutumuKit */ = {isa = PBXFileReference; lastKnownFileType = folder; name = YoutumuKit; path = ../YoutumuKit; sourceTree = SOURCE_ROOT; };
+		53CC31B06339A81DBA08D7D9 /* QueueView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QueueView.swift; sourceTree = "<group>"; };
 		688EFA7E6A98DA52DAD0734C /* YoutumuWatchApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YoutumuWatchApp.swift; sourceTree = "<group>"; };
 		8D9A4FB3E502FE9A7D81C8A9 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		8DF54E07E6F7BAA68A82355C /* ArtworkStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArtworkStore.swift; sourceTree = "<group>"; };
@@ -106,6 +109,7 @@
 				49FD76A30DD52CE48AC9AF78 /* PlayerModel.swift */,
 				1DE2BC8616264E7EE3CF7766 /* PlaylistDetailView.swift */,
 				9CF91F45610B443B54194C66 /* PlaylistsView.swift */,
+				53CC31B06339A81DBA08D7D9 /* QueueView.swift */,
 				8E58D6E1F6FDD5FC324E92B1 /* StreamPlayer.swift */,
 				688EFA7E6A98DA52DAD0734C /* YoutumuWatchApp.swift */,
 			);
@@ -250,6 +254,7 @@
 				D3D19D5263CB359EC0C862D7 /* PlayerModel.swift in Sources */,
 				1EB6F5F23FB177FA3628CE5E /* PlaylistDetailView.swift in Sources */,
 				560C0FBF2C762291A3BE7DB1 /* PlaylistsView.swift in Sources */,
+				D5B309F1868B3C2EB1FA8C63 /* QueueView.swift in Sources */,
 				BE7E773A95225C5B6668BB15 /* StreamPlayer.swift in Sources */,
 				CC223E94D233F62A089EE8B5 /* YoutumuWatchApp.swift in Sources */,
 			);
@@ -269,6 +274,7 @@
 				345A438841DA0617E4438516 /* PlayerModel.swift in Sources */,
 				EFC38AF7B7F8227492C0C6AD /* PlaylistDetailView.swift in Sources */,
 				8800E7C518A14F4C44858DAE /* PlaylistsView.swift in Sources */,
+				62FEF8FD55C931976BA17F4C /* QueueView.swift in Sources */,
 				54FDF0E35CD6BFF41BF67B18 /* StreamPlayer.swift in Sources */,
 				B50E5D2A54381ACD05BF7EF2 /* YoutumuWatchApp.swift in Sources */,
 			);

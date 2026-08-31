@@ -32,6 +32,11 @@ struct NowPlayingView: View {
             }
         }
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .automatic) {    // watchOS 9.0 compatible (topBarTrailing requires 10.0)
+                NavigationLink { QueueView() } label: { Image(systemName: "list.bullet") }
+            }
+        }
         #if os(watchOS)
         .focusable(true)
         .digitalCrownRotation($crownVolume, from: 0, through: 1, by: 0.05,
