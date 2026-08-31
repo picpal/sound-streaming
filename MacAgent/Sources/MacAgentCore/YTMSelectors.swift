@@ -160,16 +160,23 @@ enum YTM {
         "location.href = 'https://music.youtube.com/watch?list=\(playlistId)'"
     }
 
-    /// 현재 Queue — 이미 렌더된 DOM에서 읽는다 (fetch 경로 없음). 반환: {"queue":[{position,title,artist,current}]}
-    /// 셀렉터 검증: T9 체크포인트에서 DevTools로 확인 (selected 속성이 현재 곡 표시인지 포함)
+    /// 현재 Queue — 이미 렌더된 DOM에서 읽는다 (fetch 경로 없음).
+    /// T9 실측: 각 곡이 song/video 카운터파트로 2개 노드를 가지며(하나는 숨김) selected를 공유한다 —
+    /// 보이는 노드만 필터하고, selected가 여럿 남으면 마지막 것만 current로 인정.
+    /// 반환: {"queue":[{position,title,artist,current,trackId,thumb}]}
     static let queueSnapshot = """
     (() => {
-      const items = [...document.querySelectorAll('ytmusic-player-queue ytmusic-player-queue-item')];
+      const items = [...document.querySelectorAll('ytmusic-player-queue ytmusic-player-queue-item')]
+        .filter(el => el.offsetParent !== null);
+      let lastSel = -1;
+      items.forEach((el, i) => { if (el.hasAttribute('selected')) lastSel = i; });
       return JSON.stringify({queue: items.map((el, i) => ({
         position: i,
         title: el.querySelector('.song-title')?.textContent?.trim() || '',
         artist: el.querySelector('.byline')?.textContent?.trim() || '',
-        current: el.hasAttribute('selected')
+        current: i === lastSel,
+        trackId: el.data?.videoId || '',
+        thumb: el.querySelector('img')?.src || ''
       }))});
     })()
     """
@@ -178,7 +185,9 @@ enum YTM {
     static func jumpQueue(position: Int) -> String {
         """
         (() => {
-          const el = document.querySelectorAll('ytmusic-player-queue ytmusic-player-queue-item')[\(position)];
+          const items = [...document.querySelectorAll('ytmusic-player-queue ytmusic-player-queue-item')]
+            .filter(el => el.offsetParent !== null);      // queueSnapshot과 동일 인덱싱 (카운터파트 제외)
+          const el = items[\(position)];
           if (!el) return JSON.stringify(false);
           (el.querySelector('ytmusic-play-button-renderer') || el).click();
           return JSON.stringify(true);

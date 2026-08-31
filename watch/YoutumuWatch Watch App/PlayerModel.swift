@@ -83,10 +83,12 @@ final class PlayerModel: ObservableObject {
         do {
             let s = try await ApiClient.player(host: host)
             consecutiveFailures = 0
+            let trackChanged = s.trackId != serverState?.trackId
             // stateVersion 낮은 응답으로 덮지 않는다 (§5)
             if s.stateVersion >= (serverState?.stateVersion ?? 0) { serverState = s }
             browserDown = (s.browserOk == false)         // nil(구버전 Agent)은 정상 취급
             if !browserDown { recovering = false }       // 복구 완료 감지
+            if trackChanged { Task { await refreshQueue() } }   // ▶ 마커·인접 곡 메타 신선도 (§19·§21)
         } catch {
             consecutiveFailures += 1
         }
@@ -119,9 +121,11 @@ final class PlayerModel: ObservableObject {
 
     // MARK: 명령 (§21 optimistic)
 
-    private func applyOverlay(playback: PlaybackState?, title: String?, artist: String?) {
+    private func applyOverlay(playback: PlaybackState?, title: String?, artist: String?,
+                              trackId: String? = nil) {
         overlay = OptimisticOverlay(playback: playback, title: title, artist: artist,
-                                    baseStateVersion: serverState?.stateVersion ?? 0, appliedAt: Date())
+                                    baseStateVersion: serverState?.stateVersion ?? 0, appliedAt: Date(),
+                                    trackId: trackId)
         applyReconcile()
     }
 
@@ -145,13 +149,15 @@ final class PlayerModel: ObservableObject {
 
     func next() {
         let meta = adjacentQueueMeta(offset: +1)
-        applyOverlay(playback: .playing, title: meta?.title, artist: meta?.artist)
+        applyOverlay(playback: .playing, title: meta?.title, artist: meta?.artist,
+                     trackId: meta?.trackId)
         send("/api/player/next")
     }
 
     func previous() {
         let meta = adjacentQueueMeta(offset: -1)
-        applyOverlay(playback: .playing, title: meta?.title, artist: meta?.artist)
+        applyOverlay(playback: .playing, title: meta?.title, artist: meta?.artist,
+                     trackId: meta?.trackId)
         send("/api/player/previous")
     }
 
@@ -164,7 +170,7 @@ final class PlayerModel: ObservableObject {
     }
 
     func playTrack(id: String, title: String, artist: String, playlistId: String? = nil) {
-        applyOverlay(playback: .playing, title: title, artist: artist)
+        applyOverlay(playback: .playing, title: title, artist: artist, trackId: id)
         ensureStream()
         Task {
             do { _ = try await ApiClient.playTrack(host: host, id: id, listId: playlistId) }

@@ -16,7 +16,7 @@ private final class FakeController: PlayerControlling, LibraryProviding {
     // 이 파일의 테스트는 library 라우트를 다루지 않는다 — ControlAPI init 시그니처 충족용 no-op (ControlAPILibraryTests.swift가 실동작 검증)
     func listPlaylists() async throws -> [PlaylistInfo] { [] }
     func playlistTracks(playlistId: String) async throws -> [TrackSummary] { [] }
-    func queueItems() async throws -> [QueueItem] { [] }
+    func queueItems() async throws -> [QueueItemInfo] { [] }
     func jumpQueue(position: Int) async throws -> Bool { true }
     func playPlaylist(playlistId: String) async throws {}
 }

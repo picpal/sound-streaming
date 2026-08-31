@@ -6,7 +6,7 @@ import YoutumuKit
 private final class MockLibrary: LibraryProviding {
     var playlists: [PlaylistInfo] = []
     var tracks: [TrackSummary] = []
-    var queue: [QueueItem] = []
+    var queue: [QueueItemInfo] = []
     var jumpResult = true
     var playlistCalls: [String] = []
     var jumpCalls: [Int] = []
@@ -19,7 +19,7 @@ private final class MockLibrary: LibraryProviding {
     func playlistTracks(playlistId: String) async throws -> [TrackSummary] {
         if shouldThrow { throw E() }; return tracks
     }
-    func queueItems() async throws -> [QueueItem] {
+    func queueItems() async throws -> [QueueItemInfo] {
         if shouldThrow { throw E() }; return queue
     }
     func jumpQueue(position: Int) async throws -> Bool {
@@ -99,7 +99,7 @@ final class ControlAPILibraryTests: XCTestCase {
     }
 
     func testQueueSnapshotCarriesStateVersion() async throws {
-        lib.queue = [QueueItem(position: 0, title: "A", artist: "B", current: true)]
+        lib.queue = [QueueItemInfo(item: QueueItem(position: 0, title: "A", artist: "B", current: true), thumbnailUrl: nil)]
         let resp = await get("/api/queue")
         let snap = try JSONDecoder().decode(QueueSnapshot.self, from: resp.body)
         XCTAssertEqual(snap.stateVersion, svc.state().stateVersion)

@@ -68,11 +68,15 @@ public final class BrowserController: PlayerControlling, LibraryProviding {
         return env.tracks
     }
 
-    public func queueItems() async throws -> [QueueItem] {
+    public func queueItems() async throws -> [QueueItemInfo] {
         guard let json = try await eval(YTM.queueSnapshot),
               let env = try? JSONDecoder().decode(QueueListEnvelope.self, from: Data(json.utf8))
         else { throw CDPError.badResponse }
-        return env.queue
+        return env.queue.map {
+            QueueItemInfo(item: QueueItem(position: $0.position, title: $0.title, artist: $0.artist,
+                                          current: $0.current, trackId: $0.trackId),
+                          thumbnailUrl: $0.thumb)
+        }
     }
 
     public func jumpQueue(position: Int) async throws -> Bool {
@@ -98,11 +102,24 @@ public struct PlaylistInfo: Decodable, Equatable {
 public protocol LibraryProviding {
     func listPlaylists() async throws -> [PlaylistInfo]
     func playlistTracks(playlistId: String) async throws -> [TrackSummary]
-    func queueItems() async throws -> [QueueItem]
+    func queueItems() async throws -> [QueueItemInfo]
     func jumpQueue(position: Int) async throws -> Bool      // false = 해당 position 없음 (경합)
     func playPlaylist(playlistId: String) async throws
 }
 
 struct PlaylistListEnvelope: Decodable { let playlists: [PlaylistInfo] }
 struct TrackListEnvelope: Decodable { let tracks: [TrackSummary] }
-struct QueueListEnvelope: Decodable { let queue: [QueueItem] }
+struct QueueListEnvelope: Decodable { let queue: [RawQueueItem] }
+struct RawQueueItem: Decodable {
+    let position: Int; let title: String; let artist: String; let current: Bool
+    let trackId: String?; let thumb: String?
+}
+
+/// Queue 항목 + Agent 내부 전용 썸네일 URL — Watch 응답에는 item만 나간다 (spec §9 단일 origin)
+public struct QueueItemInfo {
+    public let item: QueueItem
+    public let thumbnailUrl: String?
+    public init(item: QueueItem, thumbnailUrl: String?) {
+        self.item = item; self.thumbnailUrl = thumbnailUrl
+    }
+}

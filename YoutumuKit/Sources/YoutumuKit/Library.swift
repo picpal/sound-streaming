@@ -37,8 +37,10 @@ public struct QueueItem: Codable, Equatable {
     public let title: String
     public let artist: String
     public let current: Bool
-    public init(position: Int, title: String, artist: String, current: Bool) {
+    public let trackId: String?           // optimistic artwork 전환용 (§21) — 구버전 응답엔 없을 수 있음
+    public init(position: Int, title: String, artist: String, current: Bool, trackId: String? = nil) {
         self.position = position; self.title = title; self.artist = artist; self.current = current
+        self.trackId = trackId
     }
 }
 

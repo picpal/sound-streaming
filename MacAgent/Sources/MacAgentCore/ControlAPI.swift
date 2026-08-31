@@ -95,8 +95,14 @@ public final class ControlAPI {
 
         case ("GET", "/api/queue"):
             do {
-                let items = try await library.queueItems()
-                let snap = QueueSnapshot(stateVersion: svc.state().stateVersion, items: items)
+                let infos = try await library.queueItems()
+                for info in infos {                       // optimistic artwork 공급 (§21) — URL은 Watch에 안 나간다
+                    if let id = info.item.trackId, !id.isEmpty,
+                       let url = info.thumbnailUrl, !url.isEmpty {
+                        artwork.register(id: id, url: Self.upscaleThumb(url))
+                    }
+                }
+                let snap = QueueSnapshot(stateVersion: svc.state().stateVersion, items: infos.map(\.item))
                 return ApiResponse(status: 200, body: try! JSONEncoder().encode(snap))
             } catch { return .error(502, "queue fetch failed") }
 
@@ -122,6 +128,11 @@ public final class ControlAPI {
         default:
             return .error(404, "unknown endpoint")   // allow-list 외 전부 거부
         }
+    }
+
+    /// Queue 썸네일은 60px급 — lh3 URL의 크기 파라미터를 키워 서버 리사이즈(128px) 품질을 확보
+    static func upscaleThumb(_ url: String) -> String {
+        url.replacingOccurrences(of: #"=w\d+-h\d+"#, with: "=w256-h256", options: .regularExpression)
     }
 
     private func command(_ req: ApiRequest, _ exec: () async throws -> Void) async -> ApiResponse {

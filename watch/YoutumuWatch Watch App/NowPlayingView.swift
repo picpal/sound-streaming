@@ -8,7 +8,7 @@ struct NowPlayingView: View {
 
     var body: some View {
         VStack(spacing: 6) {
-            ArtworkView(id: model.serverState?.trackId ?? "", size: 70)
+            ArtworkView(id: model.display.trackId, size: 70)         // overlay 우선 — optimistic artwork 전환 (§21)
 
             VStack(spacing: 1) {                                                  // 제목·가수 밀착 — 컨트롤을 위로
                 Text(model.display.title.isEmpty ? "—" : model.display.title)

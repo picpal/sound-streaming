@@ -19,12 +19,14 @@ public struct OptimisticOverlay: Equatable {
     public var playback: PlaybackState?
     public var title: String?
     public var artist: String?
+    public var trackId: String?              // §21 — artwork도 optimistic 전환 (nil이면 서버값 유지)
     public var baseStateVersion: UInt64      // 적용 시점의 서버 stateVersion
     public var appliedAt: Date
     public init(playback: PlaybackState?, title: String?, artist: String?,
-                baseStateVersion: UInt64, appliedAt: Date) {
+                baseStateVersion: UInt64, appliedAt: Date, trackId: String? = nil) {
         self.playback = playback; self.title = title; self.artist = artist
         self.baseStateVersion = baseStateVersion; self.appliedAt = appliedAt
+        self.trackId = trackId
     }
 }
 
@@ -33,8 +35,9 @@ public enum Reconcile {
         public let title: String
         public let artist: String
         public let playback: PlaybackState
-        public init(title: String, artist: String, playback: PlaybackState) {
-            self.title = title; self.artist = artist; self.playback = playback
+        public let trackId: String                       // artwork 표시용 — overlay 우선 (§21)
+        public init(title: String, artist: String, playback: PlaybackState, trackId: String = "") {
+            self.title = title; self.artist = artist; self.playback = playback; self.trackId = trackId
         }
     }
 
@@ -44,14 +47,15 @@ public enum Reconcile {
     public static func resolve(server: PlayerState?, overlay: OptimisticOverlay?, now: Date)
         -> (display: Display, overlay: OptimisticOverlay?) {
         let base = Display(title: server?.title ?? "", artist: server?.artist ?? "",
-                           playback: server?.playback ?? .stopped)
+                           playback: server?.playback ?? .stopped, trackId: server?.trackId ?? "")
         guard let ov = overlay else { return (base, nil) }
         let caughtUp = (server?.stateVersion ?? 0) > ov.baseStateVersion
         let timedOut = now.timeIntervalSince(ov.appliedAt) > overlayTimeout
         if caughtUp || timedOut { return (base, nil) }   // 해제 — timeout이면 결과적으로 rollback
         return (Display(title: ov.title ?? base.title,
                         artist: ov.artist ?? base.artist,
-                        playback: ov.playback ?? base.playback), ov)
+                        playback: ov.playback ?? base.playback,
+                        trackId: ov.trackId ?? base.trackId), ov)
     }
 
     /// §22 ControlLinkState: 폴링 연속 실패 0회 ok / 1–2회 degraded / 3회+ down.

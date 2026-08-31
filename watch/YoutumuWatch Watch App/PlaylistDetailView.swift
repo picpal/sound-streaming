@@ -13,13 +13,7 @@ struct PlaylistDetailView: View {
         Group {
             if let page {
                 List {
-                    Button {
-                        model.playPlaylist(id: playlist.playlistId)
-                        onPlay()
-                    } label: {
-                        Label("전체 재생", systemImage: "play.fill")
-                            .frame(maxWidth: .infinity)
-                    }
+                    // 전체 재생 버튼 제거 — 트랙 탭이 재생목록 문맥을 유지하므로 1번 곡 탭과 동일 (사용자 결정)
                     ForEach(Array(page.items.enumerated()), id: \.offset) { i, t in
                         Button {
                             guard !t.unavailable, !t.trackId.isEmpty else { return }

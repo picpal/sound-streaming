@@ -44,7 +44,15 @@ struct ArtworkView: View {
         .task(id: id) {
             image = nil
             guard !id.isEmpty else { return }
-            image = await ArtworkStore.shared.image(id: id, host: model.host)
+            // optimistic 전환 직후에는 서버에 artwork가 아직 미등록일 수 있다(404) — 짧게 재시도 (§21)
+            for attempt in 0..<3 {
+                if attempt > 0 { try? await Task.sleep(for: .seconds(2)) }
+                if let img = await ArtworkStore.shared.image(id: id, host: model.host) {
+                    image = img
+                    return
+                }
+                if Task.isCancelled { return }
+            }
         }
     }
 }
