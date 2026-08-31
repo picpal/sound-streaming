@@ -56,10 +56,14 @@ case "serve":
             server.broadcast(Envelope.encode(type: .audio, payload: frame))
         }
     }
+    let hls = HLSSegmenter()
+    server.hls = hls
+    cap.onSampleBuffer = { sb in hls.append(sb) }
     // SCStream 무증상 사망 자동 복구 — 수신자가 듣고 있는데 PCM이 끊기면 재시작
     watchdog.start(hasReceiver: { server.hasReceiver() },
                    restart: {
                        BrowserRecovery.wakeDisplay()
+                       hls.stop()
                        await cap.stop()
                        do { try await cap.start() } catch { print("CaptureWatchdog: 재시작 실패 \(error)") }
                    })
@@ -76,6 +80,7 @@ case "serve":
                                  Task {
                                      try? await Task.sleep(for: .seconds(6))
                                      BrowserRecovery.wakeDisplay()
+                                     hls.stop()
                                      await cap.stop()
                                      do { try await cap.start(); print("BrowserRecovery: 오디오 캡처 재시작") }
                                      catch { print("BrowserRecovery: 캡처 재시작 실패 \(error)") }

@@ -9,6 +9,8 @@ public final class StreamServer {
     private let lock = NSLock()
     private var receiver: Channel?          // 단일 수신자 (spec §6)
     public var api: ControlAPI?
+    public var hls: HLSSegmenter?
+    private var lastHLSRequest: Date? = nil
 
     public init(port: Int) { self.port = port }
 
@@ -22,11 +24,14 @@ public final class StreamServer {
         }
     }
 
-    /// 캡처 워치독용 — 살아있는 수신자가 있을 때만 자동 재시작을 허용
+    /// 캡처 워치독용 — envelope 수신자 활성 또는 최근 10초 내 HLS 플레이리스트 요청
     public func hasReceiver() -> Bool {
         lock.lock(); defer { lock.unlock() }
-        return receiver?.isActive ?? false
+        if receiver?.isActive == true { return true }
+        if let t = lastHLSRequest, Date().timeIntervalSince(t) < 10 { return true }
+        return false
     }
+    fileprivate func noteHLSRequest() { lock.lock(); lastHLSRequest = Date(); lock.unlock() }
 
     private func setReceiver(_ ch: Channel) {
         lock.lock()
@@ -62,6 +67,33 @@ public final class StreamServer {
             switch unwrapInboundIn(data) {
             case .head(let h):
                 head = h; body.removeAll()
+                if h.method == .GET, h.uri.hasPrefix("/audio/hls/") {
+                    let name = String(h.uri.dropFirst("/audio/hls/".count))
+                    var body: Data?
+                    var ct = "application/octet-stream"
+                    switch name {
+                    case "live.m3u8":
+                        server.noteHLSRequest()
+                        body = server.hls?.playlist().map { Data($0.utf8) }
+                        ct = "application/vnd.apple.mpegurl"
+                    case "init.mp4":
+                        body = server.hls?.initSegment()
+                        ct = "video/mp4"
+                    default:
+                        if name.hasPrefix("seg"), name.hasSuffix(".m4s"),
+                           let seq = UInt64(name.dropFirst(3).dropLast(4)) {
+                            body = server.hls?.segment(seq: seq)
+                            ct = "video/iso.segment"
+                        }
+                    }
+                    if let body {
+                        writeJSON(context.channel, status: .ok, body: body, contentType: ct)
+                    } else {
+                        writeJSON(context.channel, status: .notFound, body: Data(#"{"error":"not ready"}"#.utf8))
+                    }
+                    head = nil
+                    return
+                }
                 if h.method == .GET, h.uri == "/audio/live" {
                     var hdr = HTTPHeaders()
                     hdr.add(name: "Content-Type", value: "application/octet-stream")

@@ -6,6 +6,7 @@ enum CaptureError: Error { case chromeNotFound, noDisplay }
 public final class ChromeAudioCapture: NSObject, SCStreamOutput {
     private var stream: SCStream?
     public var onPCM: ((AVAudioPCMBuffer) -> Void)?
+    public var onSampleBuffer: ((CMSampleBuffer) -> Void)?   // HLS 세그먼터용 원본 탭
 
     public override init() {}
 
@@ -36,6 +37,7 @@ public final class ChromeAudioCapture: NSObject, SCStreamOutput {
               let desc = CMSampleBufferGetFormatDescription(sb),
               let asbd = CMAudioFormatDescriptionGetStreamBasicDescription(desc),
               let fmt = AVAudioFormat(streamDescription: asbd) else { return }
+        onSampleBuffer?(sb)
         let frames = AVAudioFrameCount(CMSampleBufferGetNumSamples(sb))
         guard let buf = AVAudioPCMBuffer(pcmFormat: fmt, frameCapacity: frames) else { return }
         buf.frameLength = frames
