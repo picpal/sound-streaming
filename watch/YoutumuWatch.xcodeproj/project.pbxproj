@@ -25,6 +25,8 @@
 		CC223E94D233F62A089EE8B5 /* YoutumuWatchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 688EFA7E6A98DA52DAD0734C /* YoutumuWatchApp.swift */; };
 		D3D19D5263CB359EC0C862D7 /* PlayerModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49FD76A30DD52CE48AC9AF78 /* PlayerModel.swift */; };
 		DAFB10973801E7C4CB852D5F /* AACDecoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBA3B404B8BCE24A5133564C /* AACDecoder.swift */; };
+		E352EE7D4047BA6C7B41F7B6 /* ArtworkStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DF54E07E6F7BAA68A82355C /* ArtworkStore.swift */; };
+		EC480D259E47A360F65183C0 /* ArtworkStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DF54E07E6F7BAA68A82355C /* ArtworkStore.swift */; };
 		FBBF095ADFB1BF10B5661E0B /* YoutumuKit in Frameworks */ = {isa = PBXBuildFile; productRef = 8CA39B538294AE37CD0C91CF /* YoutumuKit */; };
 		FCB5F11E379BA24B465CB98A /* EnrollClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6525C2EB6E1E93255ECECAB /* EnrollClient.swift */; };
 /* End PBXBuildFile section */
@@ -37,6 +39,7 @@
 		4B046DF80D38BB9E4401EEF6 /* YoutumuKit */ = {isa = PBXFileReference; lastKnownFileType = folder; name = YoutumuKit; path = ../YoutumuKit; sourceTree = SOURCE_ROOT; };
 		688EFA7E6A98DA52DAD0734C /* YoutumuWatchApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YoutumuWatchApp.swift; sourceTree = "<group>"; };
 		8D9A4FB3E502FE9A7D81C8A9 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		8DF54E07E6F7BAA68A82355C /* ArtworkStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArtworkStore.swift; sourceTree = "<group>"; };
 		8E58D6E1F6FDD5FC324E92B1 /* StreamPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StreamPlayer.swift; sourceTree = "<group>"; };
 		AF68D3C6D549E259F385551B /* YoutumuPhone.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = YoutumuPhone.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B771CB76889EEC0FDD307FD0 /* ca.crt */ = {isa = PBXFileReference; path = ca.crt; sourceTree = "<group>"; };
@@ -86,6 +89,7 @@
 			children = (
 				FBA3B404B8BCE24A5133564C /* AACDecoder.swift */,
 				3F0738084870BEB2376DE8E4 /* ApiClient.swift */,
+				8DF54E07E6F7BAA68A82355C /* ArtworkStore.swift */,
 				8D9A4FB3E502FE9A7D81C8A9 /* ContentView.swift */,
 				D6525C2EB6E1E93255ECECAB /* EnrollClient.swift */,
 				311CE6E83B62E0D0DBDFA28F /* KeyStore.swift */,
@@ -226,6 +230,7 @@
 			files = (
 				6542F8417018D18A398A8214 /* AACDecoder.swift in Sources */,
 				9EF94083AA1369CB3CD20358 /* ApiClient.swift in Sources */,
+				EC480D259E47A360F65183C0 /* ArtworkStore.swift in Sources */,
 				2114862B16951E991B9763C7 /* ContentView.swift in Sources */,
 				160B2F0C02E6866590C5025F /* EnrollClient.swift in Sources */,
 				1A4C049D463A0131A78D5640 /* KeyStore.swift in Sources */,
@@ -241,6 +246,7 @@
 			files = (
 				DAFB10973801E7C4CB852D5F /* AACDecoder.swift in Sources */,
 				8FF48612F8E1237584021762 /* ApiClient.swift in Sources */,
+				E352EE7D4047BA6C7B41F7B6 /* ArtworkStore.swift in Sources */,
 				AB3D10FBC214341D6F9B2231 /* ContentView.swift in Sources */,
 				FCB5F11E379BA24B465CB98A /* EnrollClient.swift in Sources */,
 				7CFE63E65A16C50912A5DE79 /* KeyStore.swift in Sources */,
