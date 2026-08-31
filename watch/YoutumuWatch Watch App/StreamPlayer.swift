@@ -89,7 +89,14 @@ final class StreamPlayer: NSObject, URLSessionDataDelegate {
         MPNowPlayingInfoCenter.default().nowPlayingInfo = info
     }
 
-    func stop() { task?.cancel(); task = nil; node.stop(); engine.stop() }
+    func stop() {
+        task?.cancel()
+        task = nil
+        parser.reset()
+        flush()                                              // 남은 부분 envelope/버퍼 정리 — 다음 start()에 새로 시작
+        node.stop()
+        engine.stop()
+    }
 
     private func handleAudio(_ adtsFrame: Data) {
         guard let pcm = decoder.decode(adtsFrame: adtsFrame) else { return }

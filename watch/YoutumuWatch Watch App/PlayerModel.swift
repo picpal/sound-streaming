@@ -59,12 +59,12 @@ final class PlayerModel: ObservableObject {
             consecutiveFailures = 0
             // stateVersion 낮은 응답으로 덮지 않는다 (§5)
             if s.stateVersion >= (serverState?.stateVersion ?? 0) { serverState = s }
-            player.updateNowPlaying(title: display.title, artist: display.artist)
         } catch {
             consecutiveFailures += 1
         }
         link = Reconcile.linkState(consecutiveFailures: consecutiveFailures)
         applyReconcile()
+        player.updateNowPlaying(title: display.title, artist: display.artist)
     }
 
     private func applyReconcile(now: Date = Date()) {
