@@ -42,7 +42,9 @@ public final class ControlAPI {
     public func handle(_ req: ApiRequest) async -> ApiResponse {
         switch (req.method, req.path) {
         case ("GET", "/api/player"):
-            return ApiResponse(status: 200, body: try! JSONEncoder().encode(svc.state()))
+            let s = svc.state()
+            if !s.trackId.isEmpty { artwork.registerTrack(id: s.trackId) }   // Now Playing artwork 공급 (§18)
+            return ApiResponse(status: 200, body: try! JSONEncoder().encode(s))
         case ("POST", "/api/player/play"):     return await command(req) { try await self.controller.play() }
         case ("POST", "/api/player/pause"):    return await command(req) { try await self.controller.pause() }
         case ("POST", "/api/player/next"):     return await command(req) { try await self.controller.next() }

@@ -30,6 +30,12 @@ public final class ArtworkService {
         return urls[id]
     }
 
+    /// 테스트·진단용 — id가 서빙 가능 상태(등록됨)인지. @testable 경유로만 쓴다.
+    func isRegistered(id: String) -> Bool {
+        lock.lock(); defer { lock.unlock() }
+        return urls[id] != nil
+    }
+
     public func image(id: String) async -> Data? {
         // Check cache under lock (synchronous helper)
         if let hit = getCachedImageAndUpdateLRU(id: id) {

@@ -43,12 +43,14 @@ final class ControlAPILibraryTests: XCTestCase {
     private var lib: MockLibrary!
     private var svc: PlayerStateService!
     private var api: ControlAPI!
+    private var artwork: ArtworkService!
 
     override func setUp() {
         lib = MockLibrary()
         svc = PlayerStateService()
+        artwork = ArtworkService()
         api = ControlAPI(store: CommandStore(), svc: svc, controller: NoopController(),
-                         library: lib, cache: MetadataCache(ttl: 300), artwork: ArtworkService())
+                         library: lib, cache: MetadataCache(ttl: 300), artwork: artwork)
     }
 
     private func get(_ path: String, query: [String: String] = [:]) async -> ApiResponse {
@@ -170,5 +172,13 @@ final class ControlAPILibraryTests: XCTestCase {
     func testUnknownEndpointStill404() async {
         let resp = await get("/api/library")
         XCTAssertEqual(resp.status, 404)
+    }
+
+    func testPlayerStateRegistersCurrentTrackArtwork() async throws {
+        let tid = "v1"
+        _ = svc.ingest(YTMSnapshot(videoId: tid, title: "T", byline: "A • Al", paused: false,
+                                   position: 0, duration: 100, hasVideo: true), now: Date())
+        _ = await api.handle(ApiRequest(method: "GET", path: "/api/player", body: Data()))
+        XCTAssertTrue(artwork.isRegistered(id: tid))
     }
 }
