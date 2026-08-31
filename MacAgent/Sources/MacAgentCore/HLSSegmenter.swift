@@ -14,15 +14,24 @@ public final class HLSSegmenter: NSObject, AVAssetWriterDelegate {
     public var onSegment: (() -> Void)?
 
     /// writer 생성은 첫 샘플에서 — sourceFormatHint와 initialSegmentStartTime에 실제 값이 필요
+    /// writer/input 필드는 append(캡처 스레드)와 stop(제어 스레드)이 동시에 건드릴 수 있으므로
+    /// 모든 읽기/쓰기를 lock 아래서 수행하고, append 로 넘길 로컬 참조만 lock 밖으로 꺼낸다.
     public func append(_ sb: CMSampleBuffer) {
-        if writer == nil { startWriter(firstSample: sb) }
-        guard let input, input.isReadyForMoreMediaData else { return }   // 실시간 인코딩이 밀리면 드랍 (라이브)
-        input.append(sb)
+        lock.lock()
+        let needsWriter = (writer == nil)
+        lock.unlock()
+        if needsWriter { startWriter(firstSample: sb) }
+
+        lock.lock()
+        let inp = input
+        lock.unlock()
+        guard let inp, inp.isReadyForMoreMediaData else { return }   // 실시간 인코딩이 밀리면 드랍 (라이브)
+        inp.append(sb)
     }
 
     private func startWriter(firstSample: CMSampleBuffer) {
         guard let desc = CMSampleBufferGetFormatDescription(firstSample) else { return }
-        let w = try! AVAssetWriter(contentType: .mpeg4Movie)
+        guard let w = try? AVAssetWriter(contentType: .mpeg4Movie) else { return }   // 실패해도 장시간 실행 중인 에이전트를 크래시시키지 않는다
         w.outputFileTypeProfile = .mpeg4AppleHLS
         w.preferredOutputSegmentInterval = CMTime(seconds: 1, preferredTimescale: 1)
         w.initialSegmentStartTime = CMSampleBufferGetPresentationTimeStamp(firstSample)
@@ -38,12 +47,16 @@ public final class HLSSegmenter: NSObject, AVAssetWriterDelegate {
         w.add(inp)
         w.startWriting()
         w.startSession(atSourceTime: CMSampleBufferGetPresentationTimeStamp(firstSample))
-        writer = w; input = inp
+        lock.lock()
+        if writer == nil { writer = w; input = inp }   // 동시 진입한 다른 스레드가 이미 만들었다면 이걸 버린다
+        lock.unlock()
     }
 
     public func assetWriter(_ writer: AVAssetWriter, didOutputSegmentData segmentData: Data,
                             segmentType: AVAssetSegmentType, segmentReport: AVAssetSegmentReport?) {
         lock.lock()
+        // stop() 이후 지연 도착한 콜백이거나, 새 writer가 이미 시작된 뒤 도착한 이전 writer의 콜백이면 버린다.
+        guard writer === self.writer else { lock.unlock(); return }
         switch segmentType {
         case .initialization:
             initData = segmentData
@@ -82,8 +95,14 @@ public final class HLSSegmenter: NSObject, AVAssetWriterDelegate {
         return segments.first { $0.seq == seq }?.data
     }
     public func stop() {
-        input?.markAsFinished()
-        writer?.finishWriting {}
-        lock.lock(); writer = nil; input = nil; initData = nil; segments = []; nextSeq = 0; lock.unlock()
+        lock.lock()
+        let oldInput = input
+        let oldWriter = writer
+        writer = nil; input = nil; initData = nil; segments = []; nextSeq = 0
+        lock.unlock()
+        // writer/input을 먼저 nil로 리셋한 뒤(위) 캡처해둔 참조에 대해 종료를 요청한다.
+        // 늦게 도착하는 didOutputSegmentData 콜백은 self.writer가 이미 바뀌었으므로 위의 identity 가드에서 버려진다.
+        oldInput?.markAsFinished()
+        oldWriter?.finishWriting {}
     }
 }

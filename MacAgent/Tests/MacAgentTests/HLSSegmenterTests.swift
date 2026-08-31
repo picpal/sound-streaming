@@ -67,4 +67,34 @@ final class HLSSegmenterTests: XCTestCase {
         XCTAssertGreaterThan(firstSeq, 0)
         XCTAssertNotNil(seg.segment(seq: firstSeq))
     }
+
+    /// stop() 직후 재시작(새 PTS epoch, 0부터)해도 이전 writer의 지연 콜백과 충돌하지 않고
+    /// 깨끗하게(시퀀스 0부터) 다시 플레이리스트가 나와야 한다. writer lifecycle thread-safety 회귀 테스트.
+    func testStopThenRestartCleanRecovery() {
+        let seg = HLSSegmenter()
+        let exp1 = expectation(description: "first epoch segments")
+        exp1.expectedFulfillmentCount = 2
+        exp1.assertForOverFulfill = false
+        seg.onSegment = { exp1.fulfill() }
+        for i in 0..<20 { seg.append(pcmSample(frames: 4_800, pts: Double(i) * 0.1)) }   // 2초
+        wait(for: [exp1], timeout: 10)
+        XCTAssertNotNil(seg.initSegment())
+
+        seg.stop()
+        XCTAssertNil(seg.initSegment())
+        XCTAssertNil(seg.playlist())
+
+        let exp2 = expectation(description: "second epoch segments")
+        exp2.expectedFulfillmentCount = 2
+        exp2.assertForOverFulfill = false
+        seg.onSegment = { exp2.fulfill() }
+        for i in 0..<20 { seg.append(pcmSample(frames: 4_800, pts: Double(i) * 0.1)) }   // 새 epoch, pts 0부터 재시작
+        wait(for: [exp2], timeout: 10)
+
+        XCTAssertNotNil(seg.initSegment())
+        let pl = try! XCTUnwrap(seg.playlist())
+        let seqLine = pl.split(separator: "\n").first { $0.hasPrefix("#EXT-X-MEDIA-SEQUENCE:") }!
+        let firstSeq = UInt64(seqLine.split(separator: ":")[1])!
+        XCTAssertEqual(firstSeq, 0)   // nextSeq가 stop()에서 리셋되어 이전 epoch과 충돌 없이 0부터 시작
+    }
 }
