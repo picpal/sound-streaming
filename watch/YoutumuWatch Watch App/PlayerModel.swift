@@ -11,6 +11,8 @@ final class PlayerModel: ObservableObject {
     @Published private(set) var queue: QueueSnapshot?
     @Published private(set) var link: ControlLinkState = .ok
     @Published private(set) var stream: AudioStreamState = .disconnected
+    @Published private(set) var browserDown = false      // §20 — serve는 살아있는데 Chrome/YTM 탭이 죽음
+    @Published private(set) var recovering = false       // 복구 요청 후 browserOk 회복 대기 중
     @Published var banner: String?
 
     let host = "youtumu.duckdns.org"     // NAT loopback 확인 → 내외부 단일 주소 (Phase 3 확정)
@@ -65,12 +67,26 @@ final class PlayerModel: ObservableObject {
         Task { await refresh() }
     }
 
+    /// §20 자가 복구 — 사용자가 선택했을 때만 트리거. 완료는 폴링의 browserOk가 알려준다.
+    func recoverBrowser() {
+        guard !recovering else { return }
+        recovering = true
+        Task {
+            do { _ = try await ApiClient.recoverBrowser(host: host) }
+            catch { recovering = false; banner = "복구 요청 실패"; return }
+            try? await Task.sleep(for: .seconds(30))     // Chrome 재기동 대기 상한 — 초과 시 버튼 복귀
+            if browserDown { recovering = false }
+        }
+    }
+
     private func refresh() async {
         do {
             let s = try await ApiClient.player(host: host)
             consecutiveFailures = 0
             // stateVersion 낮은 응답으로 덮지 않는다 (§5)
             if s.stateVersion >= (serverState?.stateVersion ?? 0) { serverState = s }
+            browserDown = (s.browserOk == false)         // nil(구버전 Agent)은 정상 취급
+            if !browserDown { recovering = false }       // 복구 완료 감지
         } catch {
             consecutiveFailures += 1
         }

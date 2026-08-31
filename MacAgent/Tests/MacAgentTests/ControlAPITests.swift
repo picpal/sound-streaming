@@ -84,6 +84,28 @@ final class ControlAPITests: XCTestCase {
         XCTAssertEqual(fake.calls, ["track:dQw4w9WgXcQ"])
     }
 
+    func testBrowserRecoverInvokesRecoveryClosure() async {
+        var invoked = false
+        let apiWithRecovery = ControlAPI(store: CommandStore(), svc: PlayerStateService(), controller: fake,
+                                         library: fake, cache: MetadataCache(), artwork: ArtworkService(),
+                                         recovery: { invoked = true })
+        let r = await apiWithRecovery.handle(ApiRequest(method: "POST", path: "/api/browser/recover",
+                                                        body: Data(okBody.utf8)))
+        XCTAssertEqual(r.status, 200)
+        XCTAssertTrue(invoked)
+    }
+
+    func testBrowserRecoverWithoutClosureReturns503() async {
+        let r = await post("/api/browser/recover", okBody)   // setUp의 api는 recovery 미배선
+        XCTAssertEqual(r.status, 503)
+    }
+
+    func testPlayerStateCarriesBrowserOk() async throws {
+        let r = await api.handle(ApiRequest(method: "GET", path: "/api/player", body: Data()))
+        let s = try JSONDecoder().decode(PlayerState.self, from: r.body)
+        XCTAssertEqual(s.browserOk, false)                   // 폴링 시작 전 — 미확인은 false
+    }
+
     func testTrackInPlaylistContextExecutes() async {
         let r = await post("/api/player/playlists/PLabc-123/tracks/dQw4w9WgXcQ", okBody)
         XCTAssertEqual(r.status, 200)

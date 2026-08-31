@@ -43,8 +43,13 @@ struct ContentView: View {
             .overlay {
                 if model.link == .down {                      // §20 Mac 연결 실패 — 전면 오류만
                     ZStack {
-                        Rectangle().fill(.black)
+                        Rectangle().fill(.black).ignoresSafeArea()
                         ErrorRetryView { model.retryNow() }
+                    }
+                } else if model.browserDown {                 // §20 serve 정상·Chrome/YTM 다운 — 복구 선택
+                    ZStack {
+                        Rectangle().fill(.black).ignoresSafeArea()
+                        BrowserDownView(recovering: model.recovering) { model.recoverBrowser() }
                     }
                 }
             }
@@ -68,5 +73,24 @@ struct ContentView: View {
         path.append(Route.nowPlaying)
         pushedNowPlaying = true
         nowPlayingDepth = path.count
+    }
+}
+
+/// §20 — serve는 응답하는데 Chrome/YTM 탭이 죽은 상태. 자가 복구는 사용자가 선택한다.
+private struct BrowserDownView: View {
+    let recovering: Bool
+    let onRecover: () -> Void
+    var body: some View {
+        VStack(spacing: 8) {
+            Image(systemName: "music.note.tv").font(.title3)
+            Text("Mac에서 YouTube Music이\n꺼져 있어요")
+                .font(.footnote).multilineTextAlignment(.center)
+            if recovering {
+                ProgressView()
+                Text("복구 중…").font(.footnote).foregroundStyle(.secondary)
+            } else {
+                Button("복구 시도") { onRecover() }
+            }
+        }
     }
 }

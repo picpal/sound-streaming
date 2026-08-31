@@ -11,6 +11,7 @@ public final class PlayerStateService {
     private var lastCommandAt: Date?
     private var seenFirstSnapshot = false
     private var seq: UInt64 = 0
+    private var pollHealthy = false      // 마지막 폴링 성공 여부 — 첫 스냅샷 전에는 false
     private static let commandWindow: TimeInterval = 5   // 명령→전환 귀속 창 (spec §6 cause 분류)
 
     public var onTrackChange: ((Marker) -> Void)?
@@ -20,6 +21,16 @@ public final class PlayerStateService {
     public func state() -> PlayerState {
         lock.lock(); defer { lock.unlock() }
         return current
+    }
+
+    /// CDP 폴링 생존 여부 — GET /api/player의 browserOk와 복구 판단에 사용 (§20)
+    public func browserHealthy() -> Bool {
+        lock.lock(); defer { lock.unlock() }
+        return pollHealthy
+    }
+
+    private func setPollHealthy(_ ok: Bool) {
+        lock.lock(); pollHealthy = ok; lock.unlock()
     }
 
     /// 제어 명령 수락 시 ControlAPI가 호출 — 이후 5초 내 trackId 변경은 cause=.command
@@ -64,11 +75,13 @@ public final class PlayerStateService {
                 do {
                     let snap = try await controller.snapshot()
                     _ = ingest(snap, now: Date())
+                    setPollHealthy(true)
                     if tick % 5 == 0, try await controller.dismissYouTherePopup() {
                         print("YT Music you-there 팝업 자동 해제")
                     }
                     try? await Task.sleep(for: .seconds(1))
                 } catch {
+                    setPollHealthy(false)
                     try? await Task.sleep(for: .seconds(5))   // Chrome 미기동 등 — 조용히 재시도
                 }
                 tick += 1

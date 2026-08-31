@@ -31,20 +31,27 @@ public final class ControlAPI {
     private let library: LibraryProviding
     private let cache: MetadataCache
     private let artwork: ArtworkService
+    private let recovery: (() async -> Void)?      // Chrome/탭 자가 복구 — serve가 배선 (§20)
     private static let idPattern = try! Regex(#"^[A-Za-z0-9_-]{1,64}$"#)   // trackId·playlistId·artwork id 공통 (spec §11)
 
     public init(store: CommandStore, svc: PlayerStateService, controller: PlayerControlling,
-                library: LibraryProviding, cache: MetadataCache, artwork: ArtworkService) {
+                library: LibraryProviding, cache: MetadataCache, artwork: ArtworkService,
+                recovery: (() async -> Void)? = nil) {
         self.store = store; self.svc = svc; self.controller = controller
         self.library = library; self.cache = cache; self.artwork = artwork
+        self.recovery = recovery
     }
 
     public func handle(_ req: ApiRequest) async -> ApiResponse {
         switch (req.method, req.path) {
         case ("GET", "/api/player"):
-            let s = svc.state()
+            var s = svc.state()
+            s.browserOk = svc.browserHealthy()     // §20 정직한 오류 — Chrome/탭 다운을 Watch가 구분
             if !s.trackId.isEmpty { artwork.registerTrack(id: s.trackId) }   // Now Playing artwork 공급 (§18)
             return ApiResponse(status: 200, body: try! JSONEncoder().encode(s))
+        case ("POST", "/api/browser/recover"):
+            guard let recovery else { return .error(503, "recovery unavailable") }
+            return await command(req) { await recovery() }   // 고정 동작만 — 파라미터 없음 (spec §11)
         case ("POST", "/api/player/play"):     return await command(req) { try await self.controller.play() }
         case ("POST", "/api/player/pause"):    return await command(req) { try await self.controller.pause() }
         case ("POST", "/api/player/next"):     return await command(req) { try await self.controller.next() }

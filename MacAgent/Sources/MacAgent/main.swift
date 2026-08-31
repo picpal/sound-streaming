@@ -58,7 +58,20 @@ case "serve":
     let controller = BrowserController(cdp: cdp)
     let svc = PlayerStateService()
     server.api = ControlAPI(store: CommandStore(), svc: svc, controller: controller,
-                             library: controller, cache: MetadataCache(), artwork: ArtworkService())
+                             library: controller, cache: MetadataCache(), artwork: ArtworkService(),
+                             recovery: {
+                                 await BrowserRecovery.recover(browserHealthy: svc.browserHealthy())
+                                 // SCK 캡처 필터는 캡처 시작 시점의 Chrome 프로세스에 고정된다 —
+                                 // Chrome 재기동 후엔 재생 중이어도 무음 프레임만 나온다 (실측 확인).
+                                 // Chrome 기동을 기다렸다가 캡처를 재바인딩 (HTTP 응답은 지연시키지 않는다).
+                                 Task {
+                                     try? await Task.sleep(for: .seconds(6))
+                                     BrowserRecovery.wakeDisplay()
+                                     await cap.stop()
+                                     do { try await cap.start(); print("BrowserRecovery: 오디오 캡처 재시작") }
+                                     catch { print("BrowserRecovery: 캡처 재시작 실패 \(error)") }
+                                 }
+                             })
     svc.onTrackChange = { m in
         server.broadcast(Envelope.encodeMarker(m))    // 실제 곡 전환 → 스트림 MARKER (spec §6)
         print("MARKER seq=\(m.seq) cause=\(m.cause.rawValue) track=\(m.trackId)")

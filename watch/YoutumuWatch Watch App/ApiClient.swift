@@ -73,6 +73,11 @@ enum ApiClient {
                            body: ["commandId": UUID().uuidString, "stateVersion": stateVersion])
     }
 
+    /// §20 자가 복구 — Agent가 Chrome/YTM 탭을 재기동한다. 완료는 browserOk 폴링으로 확인.
+    static func recoverBrowser(host: String) async throws -> CommandResponse {
+        try await post(host: host, path: "/api/browser/recover")
+    }
+
     static func artwork(host: String, id: String) async throws -> Data {
         var req = URLRequest(url: URL(string: "https://\(host):8443/api/artwork/\(id)")!)
         req.timeoutInterval = 10
