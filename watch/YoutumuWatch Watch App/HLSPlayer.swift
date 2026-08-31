@@ -3,10 +3,15 @@ import Foundation
 import MediaPlayer
 import Network
 
+enum RemoteCommand { case play, pause, next, previous }
+
 /// HLS 라이브 + AVPlayer — 시스템 관리 재생이라 앱 서스펜드에도 지속 (Phase 6 핵심).
 /// watchOS에는 AVAssetResourceLoader가 없어(API_UNAVAILABLE) AVPlayer가 mTLS를 직접 못 탄다.
 /// 대신 로컬 루프백 HTTP 릴레이(HLSLoopbackRelay)를 띄워 AVPlayer는 127.0.0.1 평문 HTTP로 접속하고,
 /// 릴레이가 실제 요청을 PinnedSessionDelegate 세션(mTLS)으로 대리 수행한다.
+/// @MainActor — KVO/NotificationCenter/MPRemoteCommandCenter 콜백은 off-main에서 도착할 수 있어
+/// 각 콜백 내부에서 `Task { @MainActor in ... }`로 명시적으로 홉한다 (Task 4 리뷰에서 지적된 데이터 레이스 수정).
+@MainActor
 final class HLSPlayer: NSObject {
     private let tlsDelegate = PinnedSessionDelegate()
     private lazy var session = URLSession(configuration: .default, delegate: tlsDelegate, delegateQueue: nil)
@@ -56,12 +61,13 @@ final class HLSPlayer: NSObject {
         let p = AVPlayer(playerItem: it)
 
         statusObs = it.observe(\.status) { [weak self] item, _ in
-            if item.status == .failed {
-                self?.onEnded?(item.error.map { "\($0)" } ?? "item failed")
-            }
+            guard item.status == .failed else { return }
+            let message = item.error.map { "\($0)" } ?? "item failed"
+            Task { @MainActor [weak self] in self?.onEnded?(message) }
         }
         timeObs = p.observe(\.timeControlStatus) { [weak self] player, _ in
-            if player.timeControlStatus == .playing { self?.onStreaming?() }
+            guard player.timeControlStatus == .playing else { return }
+            Task { @MainActor [weak self] in self?.onStreaming?() }
         }
         NotificationCenter.default.addObserver(self, selector: #selector(stalled),
                                                name: .AVPlayerItemPlaybackStalled, object: it)
@@ -69,10 +75,14 @@ final class HLSPlayer: NSObject {
         p.play()
     }
 
-    @objc private func stalled() {
-        // 라이브 윈도우 이탈 등 — 라이브 엣지로 복귀 시도, 실패는 status 옵저버가 잡는다
-        seekToLiveEdge()
-        player?.play()
+    // NotificationCenter의 selector 콜백은 게시 스레드에서 그대로 호출되어 off-main일 수 있다 —
+    // nonisolated로 받아 MainActor로 명시적으로 홉한다.
+    @objc private nonisolated func stalled() {
+        Task { @MainActor [weak self] in
+            // 라이브 윈도우 이탈 등 — 라이브 엣지로 복귀 시도, 실패는 status 옵저버가 잡는다
+            self?.seekToLiveEdge()
+            self?.player?.play()
+        }
     }
 
     /// 명령 직후 이전 곡 소리를 줄이는 헬퍼 — seekable 끝(-1s)으로 점프 (Task 4에서 사용)
@@ -95,10 +105,20 @@ final class HLSPlayer: NSObject {
         guard !remoteCommandsRegistered else { return }
         remoteCommandsRegistered = true
         let cc = MPRemoteCommandCenter.shared()
-        cc.playCommand.addTarget { [weak self] _ in self?.onRemoteCommand?(.play); return .success }
-        cc.pauseCommand.addTarget { [weak self] _ in self?.onRemoteCommand?(.pause); return .success }
-        cc.nextTrackCommand.addTarget { [weak self] _ in self?.onRemoteCommand?(.next); return .success }
-        cc.previousTrackCommand.addTarget { [weak self] _ in self?.onRemoteCommand?(.previous); return .success }
+        // MPRemoteCommandCenter 타깃 클로저는 off-main에서 호출될 수 있다 — MainActor로 홉한 뒤
+        // onRemoteCommand를 실행하고, 응답 자체는 즉시(비동기 완료를 기다리지 않고) .success로 반환한다.
+        cc.playCommand.addTarget { [weak self] _ in
+            Task { @MainActor [weak self] in self?.onRemoteCommand?(.play) }; return .success
+        }
+        cc.pauseCommand.addTarget { [weak self] _ in
+            Task { @MainActor [weak self] in self?.onRemoteCommand?(.pause) }; return .success
+        }
+        cc.nextTrackCommand.addTarget { [weak self] _ in
+            Task { @MainActor [weak self] in self?.onRemoteCommand?(.next) }; return .success
+        }
+        cc.previousTrackCommand.addTarget { [weak self] _ in
+            Task { @MainActor [weak self] in self?.onRemoteCommand?(.previous) }; return .success
+        }
     }
 
     func updateNowPlaying(title: String, artist: String) {

@@ -16,7 +16,7 @@ final class PlayerModel: ObservableObject {
     @Published var banner: String?
 
     let host = "youtumu.duckdns.org"     // NAT loopback 확인 → 내외부 단일 주소 (Phase 3 확정)
-    nonisolated(unsafe) let player = HLSPlayer()
+    let player = HLSPlayer()
 
     private var overlay: OptimisticOverlay?
     private var consecutiveFailures = 0
