@@ -44,6 +44,15 @@ final class StreamPlayer: NSObject, URLSessionDataDelegate {
             self?.onMarker?(m)
         }
         session = URLSession(configuration: .default, delegate: self, delegateQueue: nil)
+        // 라우트 전환(AirPods 연결 등) 시 엔진이 정지된다 — 복구하지 않으면 첫 재생이 무음 (T9 실측)
+        NotificationCenter.default.addObserver(forName: .AVAudioEngineConfigurationChange,
+                                               object: engine, queue: nil) { [weak self] _ in
+            guard let self, self.task != nil else { return }   // 스트림 사용 중일 때만
+            if !self.engine.isRunning {
+                try? self.engine.start()
+                if self.started { self.node.play() }
+            }
+        }
     }
 
     func start(url: URL) async throws {
