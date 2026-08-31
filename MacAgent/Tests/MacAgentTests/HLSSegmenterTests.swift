@@ -69,8 +69,11 @@ final class HLSSegmenterTests: XCTestCase {
     }
 
     /// stop() 직후 재시작(새 PTS epoch, 0부터)해도 이전 writer의 지연 콜백과 충돌하지 않고
-    /// 깨끗하게(시퀀스 0부터) 다시 플레이리스트가 나와야 한다. writer lifecycle thread-safety 회귀 테스트.
-    func testStopThenRestartCleanRecovery() {
+    /// 안전하게 다시 플레이리스트가 나와야 한다. 또한 #EXT-X-MEDIA-SEQUENCE는 세대가 바뀌어도
+    /// 절대 감소하면 안 되고(감소하면 AVPlayer가 깨진 피드로 보고 자동 복구를 포기한다),
+    /// 재시작 경계에는 #EXT-X-DISCONTINUITY가 정확히 한 번, 새 epoch의 첫 세그먼트 바로 앞에 있어야 한다.
+    /// writer lifecycle thread-safety + HLS 시퀀스 단조성 회귀 테스트.
+    func testStopThenRestartMonotonicSequenceWithDiscontinuity() {
         let seg = HLSSegmenter()
         let exp1 = expectation(description: "first epoch segments")
         exp1.expectedFulfillmentCount = 2
@@ -79,6 +82,15 @@ final class HLSSegmenterTests: XCTestCase {
         for i in 0..<20 { seg.append(pcmSample(frames: 4_800, pts: Double(i) * 0.1)) }   // 2초
         wait(for: [exp1], timeout: 10)
         XCTAssertNotNil(seg.initSegment())
+
+        // 첫 epoch 종료 시점의 마지막 seq를 기록해둔다 — 재시작 후 시퀀스가 이보다 커야(단조 증가) 한다.
+        let pl1 = try! XCTUnwrap(seg.playlist())
+        XCTAssertFalse(pl1.contains("#EXT-X-DISCONTINUITY"))   // 첫 epoch에는 불연속이 없어야 함
+        let seg0Lines = pl1.split(separator: "\n").filter { $0.hasSuffix(".m4s") }
+        let lastSeqEpoch1 = seg0Lines.compactMap { line -> UInt64? in
+            let s = line.dropFirst(3).dropLast(4)   // "seg" 접두, ".m4s" 접미 제거
+            return UInt64(s)
+        }.max()!
 
         seg.stop()
         XCTAssertNil(seg.initSegment())
@@ -92,9 +104,22 @@ final class HLSSegmenterTests: XCTestCase {
         wait(for: [exp2], timeout: 10)
 
         XCTAssertNotNil(seg.initSegment())
-        let pl = try! XCTUnwrap(seg.playlist())
-        let seqLine = pl.split(separator: "\n").first { $0.hasPrefix("#EXT-X-MEDIA-SEQUENCE:") }!
-        let firstSeq = UInt64(seqLine.split(separator: ":")[1])!
-        XCTAssertEqual(firstSeq, 0)   // nextSeq가 stop()에서 리셋되어 이전 epoch과 충돌 없이 0부터 시작
+        let pl2 = try! XCTUnwrap(seg.playlist())
+        let lines2 = pl2.split(separator: "\n").map(String.init)
+
+        // MEDIA-SEQUENCE 헤더도 이전 epoch의 마지막 seq보다 커야 한다(단조 증가, 절대 감소 금지).
+        let seqLine = lines2.first { $0.hasPrefix("#EXT-X-MEDIA-SEQUENCE:") }!
+        let headerFirstSeq = UInt64(seqLine.split(separator: ":")[1])!
+        XCTAssertGreaterThan(headerFirstSeq, lastSeqEpoch1)
+
+        // #EXT-X-DISCONTINUITY가 정확히 한 번, 새 epoch 첫 세그먼트의 EXTINF 바로 앞에 있어야 한다.
+        let discontinuityCount = lines2.filter { $0 == "#EXT-X-DISCONTINUITY" }.count
+        XCTAssertEqual(discontinuityCount, 1)
+        let dIdx = try! XCTUnwrap(lines2.firstIndex(of: "#EXT-X-DISCONTINUITY"))
+        XCTAssertTrue(lines2[dIdx + 1].hasPrefix("#EXTINF:"))
+        let segLine = lines2[dIdx + 2]
+        XCTAssertTrue(segLine.hasPrefix("seg") && segLine.hasSuffix(".m4s"))
+        let newEpochFirstSeq = UInt64(segLine.dropFirst(3).dropLast(4))!
+        XCTAssertGreaterThan(newEpochFirstSeq, lastSeqEpoch1)   // 새 epoch 첫 세그먼트도 단조 증가 구간에 있음
     }
 }

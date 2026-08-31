@@ -8,8 +8,10 @@ public final class HLSSegmenter: NSObject, AVAssetWriterDelegate {
     private var writer: AVAssetWriter?
     private var input: AVAssetWriterInput?
     private var initData: Data?
-    private var segments: [(seq: UInt64, data: Data, duration: Double)] = []
+    private var segments: [(seq: UInt64, data: Data, duration: Double, discontinuityBefore: Bool)] = []
     private var nextSeq: UInt64 = 0
+    /// stop() 이후 재시작된 writer의 첫 세그먼트에 #EXT-X-DISCONTINUITY를 붙이기 위한 1회성 플래그.
+    private var pendingDiscontinuity = false
     static let window = 8                                    // 라이브 윈도우 (Global Constraints)
     public var onSegment: (() -> Void)?
 
@@ -63,10 +65,14 @@ public final class HLSSegmenter: NSObject, AVAssetWriterDelegate {
         guard writer === self.writer else { lock.unlock(); return }
         switch segmentType {
         case .initialization:
+            // 세대가 바뀌어도 오디오 인코딩 설정(48kHz AAC 스테레오 128k)은 항상 동일하므로
+            // init.mp4 URI를 버전별로 나눌 필요가 없다 — 캐시된 init 세그먼트가 계속 디코딩 가능하다.
             initData = segmentData
         case .separable:
             let dur = segmentReport?.trackReports.first?.duration.seconds ?? 1.0
-            segments.append((nextSeq, segmentData, dur))
+            let isDiscontinuity = pendingDiscontinuity
+            if isDiscontinuity { pendingDiscontinuity = false }   // 새 writer의 첫 세그먼트에만 표시
+            segments.append((nextSeq, segmentData, dur, isDiscontinuity))
             nextSeq += 1
             if segments.count > Self.window { segments.removeFirst() }
         @unknown default: break
@@ -87,6 +93,7 @@ public final class HLSSegmenter: NSObject, AVAssetWriterDelegate {
             "#EXT-X-MAP:URI=\"init.mp4\"",
         ]
         for s in segments {
+            if s.discontinuityBefore { lines.append("#EXT-X-DISCONTINUITY") }
             lines.append(String(format: "#EXTINF:%.5f,", s.duration))
             lines.append("seg\(s.seq).m4s")
         }
@@ -102,7 +109,11 @@ public final class HLSSegmenter: NSObject, AVAssetWriterDelegate {
         lock.lock()
         let oldInput = input
         let oldWriter = writer
-        writer = nil; input = nil; initData = nil; segments = []; nextSeq = 0
+        // nextSeq는 리셋하지 않는다 — writer 세대가 바뀌어도 #EXT-X-MEDIA-SEQUENCE는 단조 증가해야 한다.
+        // (감소하면 AVPlayer가 깨진 피드로 간주해 자동 복구를 포기한다.) 최소 한 세그먼트가 나온 적
+        // 있을 때만(nextSeq > 0) 재시작 표시가 의미 있으므로 그 경우에만 discontinuity를 예약한다.
+        if nextSeq > 0 { pendingDiscontinuity = true }
+        writer = nil; input = nil; initData = nil; segments = []
         lock.unlock()
         // writer/input을 먼저 nil로 리셋한 뒤(위) 캡처해둔 참조에 대해 종료를 요청한다.
         // 늦게 도착하는 didOutputSegmentData 콜백은 self.writer가 이미 바뀌었으므로 위의 identity 가드에서 버려진다.
