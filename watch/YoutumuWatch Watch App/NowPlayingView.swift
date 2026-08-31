@@ -33,8 +33,16 @@ struct NowPlayingView: View {
         }
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            ToolbarItem(placement: .automatic) {    // watchOS 9.0 compatible (topBarTrailing requires 10.0)
-                NavigationLink { QueueView() } label: { Image(systemName: "list.bullet") }
+            // .automatic은 watchOS 26에서 artwork를 덮는 대형 오버레이로 렌더링됨 (시뮬레이터 확인)
+            // — 10+에서는 topBarTrailing, 9에서만 fallback
+            if #available(watchOS 10.0, iOS 17.0, *) {
+                ToolbarItem(placement: .topBarTrailing) {
+                    NavigationLink { QueueView() } label: { Image(systemName: "list.bullet") }
+                }
+            } else {
+                ToolbarItem(placement: .automatic) {
+                    NavigationLink { QueueView() } label: { Image(systemName: "list.bullet") }
+                }
             }
         }
         #if os(watchOS)
