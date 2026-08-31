@@ -53,6 +53,11 @@ final class PlayerModel: ObservableObject {
         pollTask = nil
     }
 
+    /// §20 재시도 — 다음 tick을 기다리지 않고 즉시 1회 재조회
+    func retryNow() {
+        Task { await refresh() }
+    }
+
     private func refresh() async {
         do {
             let s = try await ApiClient.player(host: host)

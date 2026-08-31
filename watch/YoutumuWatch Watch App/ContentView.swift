@@ -8,9 +8,11 @@ struct ContentView: View {
     @State private var enrolled = KeyStore.identity() != nil
     @State private var path = NavigationPath()
     @State private var routed = false
-    // 중복 push 방지: NavigationPath는 내용 검사가 불가하므로 별도 플래그로 추적.
-    // path가 비면(= 루트로 완전히 돌아오면) 플래그를 초기화해 다음 재생 시 다시 push할 수 있게 한다.
+    // 중복 push 방지: NavigationPath는 내용 검사가 불가하므로 push 시점의 depth를 기록해 추적.
+    // path.count가 그 depth 아래로 줄어들면(= NowPlaying보다 얕은 곳으로 이동) 플래그를 초기화한다.
+    // (단순 isEmpty 체크는 Detail로 swipe-back 후 다른 트랙 재생 시 stuck 되는 버그가 있었음 — depth 비교로 교체)
     @State private var pushedNowPlaying = false
+    @State private var nowPlayingDepth: Int?
 
     private enum Route: Hashable { case nowPlaying }
 
@@ -26,7 +28,10 @@ struct ContentView: View {
                     .navigationDestination(for: Route.self) { _ in NowPlayingView() }
             }
             .onChange(of: path) { newPath in
-                if newPath.isEmpty { pushedNowPlaying = false }
+                if let d = nowPlayingDepth, newPath.count < d {
+                    nowPlayingDepth = nil
+                    pushedNowPlaying = false
+                }
             }
             .overlay(alignment: .bottom) {
                 if let msg = model.banner {
@@ -39,7 +44,7 @@ struct ContentView: View {
                 if model.link == .down {                      // §20 Mac 연결 실패 — 전면 오류만
                     ZStack {
                         Rectangle().fill(.black)
-                        ErrorRetryView { model.startPolling() }
+                        ErrorRetryView { model.retryNow() }
                     }
                 }
             }
@@ -60,7 +65,8 @@ struct ContentView: View {
 
     private func pushNowPlaying() {
         guard !pushedNowPlaying else { return }
-        pushedNowPlaying = true
         path.append(Route.nowPlaying)
+        pushedNowPlaying = true
+        nowPlayingDepth = path.count
     }
 }
